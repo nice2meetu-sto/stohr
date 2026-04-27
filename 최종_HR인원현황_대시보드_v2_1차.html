@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>서울관광재단 - HR 인원현황 대시보드</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-bottom: 4px solid #667eea;
+        }
+
+        header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        header p {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 15px;
+        }
+
+        .header-controls {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        input[type="text"] {
+            padding: 10px 15px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 8px;
+            background: rgba(255,255,255,0.1);
+            color: white;
+            font-size: 14px;
+            min-width: 300px;
+        }
+
+        input[type="text"]::placeholder {
+            color: rgba(255,255,255,0.7);
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            background: rgba(255,255,255,0.2);
+            border-color: white;
+        }
+
+        button {
+            padding: 10px 20px;
+            background: white;
+            color: #667eea;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 20px;
+            padding: 30px;
+        }
+
+        .main-section {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            border-bottom: 2px solid #e0e0e0;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .tab-button {
+            padding: 12px 20px;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+            font-weight: 600;
+            color: #666;
+            transition: all 0.3s ease;
+            font-size: 15px;
+        }
+
+        .tab-button.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            background: #fafafa;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        thead th {
+            background: #667eea;
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        tbody td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        tbody tr:hover {
+            background: #f5f5f5;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-active { background: #d4edda; color: #155724; }
+        .status-leave { background: #fff3cd; color: #856404; }
+        .status-pending { background: #e2e3e5; color: #383d41; }
+        .status-upcoming { background: #cce5ff; color: #004085; }
+        .status-urgent { background: #f8d7da; color: #721c24; }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
+        }
+
+        .stat-card.alt1 { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+        .stat-card.alt2 { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+        .stat-card.alt3 { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+
+        .stat-number {
+            font-size: 32px;
+            font-weight: 700;
+            margin: 10px 0;
+        }
+
+        .stat-label {
+            font-size: 13px;
+            opacity: 0.9;
+        }
+
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .config-panel {
+            background: #f8f9fa;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 20px;
+            height: fit-content;
+            position: sticky;
+            top: 20px;
+        }
+
+        .config-panel h3 {
+            color: #667eea;
+            font-size: 16px;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 6px 12px;
+            border: 2px solid #ddd;
+            background: white;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            color: #666;
+        }
+
+        .filter-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .search-box {
+            margin-bottom: 20px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 13px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .alert-info {
+            background: #cce5ff;
+            color: #004085;
+            border: 1px solid #b8daff;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+            font-size: 14px;
+        }
+
+        .last-updated {
+            font-size: 12px;
+            color: #999;
+            margin-top: 10px;
+            text-align: right;
+        }
+
+        @media (max-width: 1200px) {
+            .content {
+                grid-template-columns: 1fr;
+            }
+            .dashboard {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header-controls {
+                flex-direction: column;
+            }
+            input[type="text"] {
+                min-width: unset;
+                width: 100%;
+            }
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📊 서울관광재단 HR 인원현황 대시보드</h1>
+            <p>Apps Script 연동 | 유형별/임박 기간별 분류</p>
+            <div class="header-controls">
+                <button onclick="loadSheetData()">🔄 데이터 새로고침</button>
+                <button onclick="openGoogleSheet()" style="background: #34a853; color: white;">📊 Google Sheet 열기</button>
+            </div>
+            <div class="last-updated" id="lastUpdated"></div>
+        </header>
+
+        <div class="content">
+            <div class="main-section">
+                <div id="messageBox"></div>
+
+                <!-- 탭 버튼 -->
+                <div class="tabs">
+                    <button class="tab-button active" onclick="switchTab(0)">📈 대시보드</button>
+                    <button class="tab-button" onclick="switchTab(1)">👥 전체 인원</button>
+                    <button class="tab-button" onclick="switchTab(2)">📋 휴직자</button>
+                    <button class="tab-button" onclick="switchTab(3)">📅 예정자</button>
+                    <button class="tab-button" onclick="switchTab(4)">📊 통계</button>
+                </div>
+
+                <!-- 탭 0: 대시보드 -->
+                <div id="tab0" class="tab-content active">
+                    <div class="dashboard">
+                        <div class="stat-card">
+                            <div class="stat-label">전체 인원</div>
+                            <div class="stat-number" id="totalCount">0</div>
+                        </div>
+                        <div class="stat-card alt1">
+                            <div class="stat-label">재직 중</div>
+                            <div class="stat-number" id="activeCount">0</div>
+                        </div>
+                        <div class="stat-card alt2">
+                            <div class="stat-label">휴직 중</div>
+                            <div class="stat-number" id="leaveCount">0</div>
+                        </div>
+                        <div class="stat-card alt3">
+                            <div class="stat-label">입사 예정</div>
+                            <div class="stat-number" id="joinPendingCount">0</div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 30px;">
+                        <h3 style="color: #333; margin-bottom: 20px; font-size: 18px;">📌 임박 예정자 (30일 이내, 상위 10명)</h3>
+                        <div id="upcomingList"></div>
+                    </div>
+                </div>
+
+                <!-- 탭 1: 전체 인원 -->
+                <div id="tab1" class="tab-content">
+                    <div class="search-box">
+                        <input type="text" id="searchInput" placeholder="이름, 부서로 검색..." onkeyup="filterTable('tab1')">
+                    </div>
+                    <div class="filter-buttons">
+                        <button class="filter-btn active" onclick="setFilter('all')">전체</button>
+                        <button class="filter-btn" onclick="setFilter('재직')">재직</button>
+                        <button class="filter-btn" onclick="setFilter('휴직')">휴직</button>
+                        <button class="filter-btn" onclick="setFilter('입사예정')">입사예정</button>
+                    </div>
+                    <div class="table-wrapper">
+                        <table id="employeeTable">
+                            <thead>
+                                <tr>
+                                    <th>사원명</th>
+                                    <th>부서</th>
+                                    <th>직급</th>
+                                    <th>상태</th>
+                                    <th>입사일</th>
+                                    <th>유형</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableBody">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 탭 2: 휴직자 -->
+                <div id="tab2" class="tab-content">
+                    <div class="alert alert-info">
+                        <span>ℹ️</span>
+                        <span>현재 휴직 중인 직원 목록입니다. 유형별로 필터링할 수 있습니다.</span>
+                    </div>
+                    <div class="filter-buttons">
+                        <button class="filter-btn active" onclick="setLeaveTypeFilter('all')">전체</button>
+                        <button class="filter-btn" onclick="setLeaveTypeFilter('육아휴직')">육아휴직</button>
+                        <button class="filter-btn" onclick="setLeaveTypeFilter('가사휴직')">가사휴직</button>
+                        <button class="filter-btn" onclick="setLeaveTypeFilter('병가')">병가</button>
+                    </div>
+                    <div class="table-wrapper">
+                        <table id="leaveTable">
+                            <thead>
+                                <tr>
+                                    <th>사원명</th>
+                                    <th>부서</th>
+                                    <th>유형</th>
+                                    <th>시작일</th>
+                                    <th>종료일</th>
+                                    <th>D-day</th>
+                                </tr>
+                            </thead>
+                            <tbody id="leaveBody">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 탭 3: 예정자 -->
+                <div id="tab3" class="tab-content">
+                    <div class="alert alert-info">
+                        <span>ℹ️</span>
+                        <span>휴직/파견 예정자 목록입니다. 시작일/종료일 기준으로 필터링할 수 있습니다.</span>
+                    </div>
+                    <div style="margin-bottom: 20px;">
+                        <label style="font-weight: 600; color: #333; display: block; margin-bottom: 10px;">임박 기간 필터:</label>
+                        <div class="filter-buttons">
+                            <button class="filter-btn active" onclick="setScheduleFilter(999999)">전체</button>
+                            <button class="filter-btn" onclick="setScheduleFilter(30)">30일 이내</button>
+                            <button class="filter-btn" onclick="setScheduleFilter(60)">60일 이내</button>
+                            <button class="filter-btn" onclick="setScheduleFilter(90)">90일 이내</button>
+                        </div>
+                    </div>
+                    <div class="table-wrapper">
+                        <table id="scheduleTable">
+                            <thead>
+                                <tr>
+                                    <th>사원명</th>
+                                    <th>부서</th>
+                                    <th>유형</th>
+                                    <th>종류</th>
+                                    <th>예정일</th>
+                                    <th>D-day</th>
+                                </tr>
+                            </thead>
+                            <tbody id="scheduleBody">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 탭 4: 통계 -->
+                <div id="tab4" class="tab-content">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+                        <div class="stat-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                            <div class="stat-label">근무형태별</div>
+                            <div id="statusStats" style="font-size: 13px; text-align: left; line-height: 2;"></div>
+                        </div>
+                        <div class="stat-card alt1" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                            <div class="stat-label">부서별 인원</div>
+                            <div id="deptStats" style="font-size: 13px; text-align: left; line-height: 2;"></div>
+                        </div>
+                        <div class="stat-card alt2" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                            <div class="stat-label">유형별 인원</div>
+                            <div id="typeStats" style="font-size: 13px; text-align: left; line-height: 2;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 사이드바 -->
+            <div class="sidebar">
+                <div class="config-panel">
+                    <h3>📋 사용 설명</h3>
+                    <div class="alert alert-info">
+                        <span>ℹ️</span>
+                        <span>Apps Script를 통해 Google Sheets 데이터를 실시간 조회합니다.</span>
+                    </div>
+                    <div style="font-size: 13px; line-height: 1.8; color: #666;">
+                        <p><strong>1단계:</strong></p>
+                        <p>헤더의 "🔄 데이터 새로고침" 클릭</p>
+                        
+                        <p style="margin-top: 10px;"><strong>2단계:</strong></p>
+                        <p>데이터 로드 완료 대기</p>
+                        
+                        <p style="margin-top: 10px;"><strong>3단계:</strong></p>
+                        <p>각 탭에서 현황 조회</p>
+                    </div>
+                </div>
+
+                <div class="config-panel">
+                    <h3>🎯 탭 설명</h3>
+                    <div style="font-size: 12px; line-height: 1.8; color: #666;">
+                        <p><strong>대시보드:</strong> 전체 현황 + 임박 예정자</p>
+                        <p><strong>전체 인원:</strong> 모든 직원 조회</p>
+                        <p><strong>휴직자:</strong> 현재 휴직 중인 직원</p>
+                        <p><strong>예정자:</strong> 휴직/파종 예정자</p>
+                        <p><strong>통계:</strong> 유형별 분포</p>
+                    </div>
+                </div>
+
+                <div class="config-panel">
+                    <h3>📌 범례</h3>
+                    <div style="display: flex; flex-direction: column; gap: 8px; font-size: 12px;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span class="status-badge status-active">재직</span>
+                            <span>정상 근무 중</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span class="status-badge status-leave">휴직</span>
+                            <span>현재 휴직 중</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span class="status-badge status-upcoming">예정</span>
+                            <span>예정 사항 있음</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span class="status-badge status-urgent">임박</span>
+                            <span>30일 이내</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let employees = [];
+        let currentStatusFilter = 'all';
+        let currentLeaveTypeFilter = 'all';
+        let currentScheduleFilter = 999999;
+
+        function showMessage(msg, type = 'info') {
+            const box = document.getElementById('messageBox');
+            const className = type === 'error' ? 'alert alert-warning' : 'alert alert-info';
+            box.innerHTML = `<div class="${className}"><span>${msg}</span></div>`;
+            setTimeout(() => box.innerHTML = '', 5000);
+        }
+
+        function updateLastUpdated() {
+            const now = new Date();
+            const timeStr = now.toLocaleString('ko-KR');
+            document.getElementById('lastUpdated').textContent = `마지막 업데이트: ${timeStr}`;
+        }
+
+        async function loadSheetData() {
+            // Apps Script 웹앱 URL (고정)
+            const appsScriptUrl = 'https://script.google.com/macros/s/AKfycbzacl1nDrOJ-3qJVBVWBWjctS3_fLmZjyg7caRQ0JShvIyGyYUCArZnlhdLIto7fxuQ/exec';
+
+            try {
+                showMessage('📥 데이터를 불러오는 중...');
+                
+                const response = await fetch(appsScriptUrl);
+                
+                if (!response.ok) {
+                    throw new Error('Apps Script 응답 오류');
+                }
+
+                const data = await response.json();
+                
+                if (!Array.isArray(data) || data.length === 0) {
+                    throw new Error('데이터 형식 오류');
+                }
+
+                parseJSON(data);
+                updateLastUpdated();
+                showMessage('✅ 데이터 로드 완료!', 'success');
+                updateDashboard();
+
+            } catch (error) {
+                showMessage(`❌ 데이터 로드 실패\n\n오류: ${error.message}`, 'error');
+            }
+        }
+
+        function parseJSON(data) {
+            employees = [];
+
+            data.forEach(row => {
+                if (!row['사원명']) return;
+
+                // 날짜 포맷 변환
+                let startDate = row['시작일'] || '';
+                let endDate = row['종료일'] || '';
+
+                const emp = {
+                    contractType: row['계약형태'] || '',
+                    status: row['근무형태'] || '',
+                    code: row['사원코드'] || '',
+                    dept: row['부서'] || '',
+                    location: row['근무지'] || '',
+                    name: row['사원명'] || '',
+                    rank: row['직급'] || '',
+                    position: row['직책'] || '',
+                    joinDate: row['입사일자'] || '',
+                    type: row['유형'] || '',
+                    startDate: formatDate(startDate),
+                    endDate: formatDate(endDate),
+                    note: row['비고'] || ''
+                };
+
+                employees.push(emp);
+            });
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return '';
+            
+            // 이미 YYYY-MM-DD 형식이면 그대로
+            if (typeof dateStr === 'string' && dateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
+                return dateStr;
+            }
+            
+            // ISO 형식 (2025-09-08T15:00:00.000Z) → YYYY-MM-DD
+            if (typeof dateStr === 'string' && dateStr.includes('T')) {
+                return dateStr.split('T')[0];
+            }
+            
+            // 날짜 객체 처리
+            if (dateStr instanceof Date) {
+                return dateStr.toISOString().split('T')[0];
+            }
+            
+            // YYYY.MM.DD 형식 → YYYY-MM-DD
+            if (typeof dateStr === 'string' && dateStr.match(/\d{4}\.\d{1,2}\.\d{1,2}/)) {
+                return dateStr.replace(/(\d{4})\.(\d{1,2})\.(\d{1,2})/, (match, year, month, day) => {
+                    return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+                });
+            }
+            
+            // Apps Script의 =date() 형식은 그대로
+            if (typeof dateStr === 'string' && dateStr.includes('=date')) {
+                return dateStr;
+            }
+            
+            return dateStr;
+        }
+
+        function getDaysUntil(dateStr) {
+            if (!dateStr) return null;
+            
+            // 여러 날짜 형식 처리
+            let date = null;
+            
+            // ISO 형식 (2025-09-08T15:00:00.000Z)
+            if (typeof dateStr === 'string' && dateStr.includes('T')) {
+                date = new Date(dateStr);
+            }
+            // YYYY-MM-DD 형식
+            else if (dateStr.match(/\d{4}-\d{2}-\d{2}/)) {
+                date = new Date(dateStr);
+            }
+            // YYYY.M.D 형식
+            else if (dateStr.match(/\d{4}\.\s*\d{1,2}\.\s*\d{1,2}/)) {
+                const match = dateStr.match(/(\d{4})\.\s*(\d{1,2})\.\s*(\d{1,2})/);
+                date = new Date(match[1], match[2] - 1, match[3]);
+            }
+            
+            if (!date || isNaN(date)) return null;
+            
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            date.setHours(0, 0, 0, 0);
+            
+            const days = Math.ceil((date - today) / (1000 * 60 * 60 * 24));
+            return days > 0 ? days : null;
+        }
+
+        function updateDashboard() {
+            let active = 0, onLeave = 0, joinPending = 0, urgent = 0;
+            const upcomingList = [];
+
+            employees.forEach(emp => {
+                if (emp.status === '재직') {
+                    active++;
+                } else if (emp.status === '휴직') {
+                    onLeave++;
+                } else if (emp.status === '입사예정') {
+                    joinPending++;
+                }
+
+                // 임박 예정자 (30일 이내 종료일)
+                const endDays = getDaysUntil(emp.endDate);
+                if (endDays !== null && endDays <= 30 && emp.status === '휴직') {
+                    urgent++;
+                    upcomingList.push({ emp, days: endDays, type: '복직' });
+                }
+
+                // 30일 이내 시작 예정
+                const startDays = getDaysUntil(emp.startDate);
+                if (startDays !== null && startDays <= 30 && emp.status === '재직' && emp.type) {
+                    urgent++;
+                    upcomingList.push({ emp, days: startDays, type: '시작' });
+                }
+
+                // 입사 예정자의 입사예정일 (startDate 기준)
+                if (emp.status === '입사예정' && emp.startDate) {
+                    const joinDays = getDaysUntil(emp.startDate);
+                    if (joinDays !== null && joinDays <= 30) {
+                        urgent++;
+                        upcomingList.push({ emp, days: joinDays, type: '입사' });
+                    }
+                }
+            });
+
+            document.getElementById('totalCount').textContent = employees.length;
+            document.getElementById('activeCount').textContent = active;
+            document.getElementById('leaveCount').textContent = onLeave;
+            document.getElementById('joinPendingCount').textContent = joinPending;
+
+            upcomingList.sort((a, b) => (a.days || 999) - (b.days || 999));
+            const listHtml = upcomingList.slice(0, 10).map(item => `
+                <div class="alert alert-warning" style="margin-bottom: 8px;">
+                    <strong>${item.emp.name}</strong> (${item.emp.dept})<br>
+                    ${item.emp.type || item.type} ${item.type} | 
+                    <span style="color: #721c24; font-weight: bold;">D-${item.days}</span>
+                </div>
+            `).join('');
+            document.getElementById('upcomingList').innerHTML = listHtml || '<div class="empty-state">임박 예정 없음</div>';
+
+            renderTables();
+            updateStatistics();
+        }
+
+        function renderTables() {
+            // 전체 인원 테이블
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+
+            employees.forEach(emp => {
+                if (currentStatusFilter !== 'all' && emp.status !== currentStatusFilter) return;
+
+                const statusClass = emp.status === '재직' ? 'active' : emp.status === '휴직' ? 'leave' : 'pending';
+                const row = `
+                    <tr>
+                        <td><strong>${emp.name}</strong></td>
+                        <td>${emp.dept}</td>
+                        <td>${emp.rank}</td>
+                        <td><span class="status-badge status-${statusClass}">${emp.status}</span></td>
+                        <td>${emp.joinDate ? emp.joinDate.substring(0, 10) : '-'}</td>
+                        <td>${emp.type || '-'}</td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
+
+            // 휴직자 테이블
+            const leaveBody = document.getElementById('leaveBody');
+            leaveBody.innerHTML = '';
+
+            employees.filter(emp => emp.status === '휴직').forEach(emp => {
+                if (currentLeaveTypeFilter !== 'all' && emp.type !== currentLeaveTypeFilter) return;
+
+                const endDays = getDaysUntil(emp.endDate);
+                const row = `
+                    <tr>
+                        <td><strong>${emp.name}</strong></td>
+                        <td>${emp.dept}</td>
+                        <td>${emp.type || '-'}</td>
+                        <td>${emp.startDate || '-'}</td>
+                        <td>${emp.endDate || '-'}</td>
+                        <td>${endDays !== null ? `D-${endDays}` : '-'}</td>
+                    </tr>
+                `;
+                leaveBody.innerHTML += row;
+            });
+
+            // 예정자 테이블
+            const scheduleBody = document.getElementById('scheduleBody');
+            scheduleBody.innerHTML = '';
+
+            // 재직자의 휴직/파견 예정
+            employees.filter(emp => emp.type && emp.status === '재직').forEach(emp => {
+                const startDays = getDaysUntil(emp.startDate);
+                const endDays = getDaysUntil(emp.endDate);
+                
+                if (startDays !== null && startDays <= currentScheduleFilter) {
+                    const row = `
+                        <tr>
+                            <td><strong>${emp.name}</strong></td>
+                            <td>${emp.dept}</td>
+                            <td>${emp.type}</td>
+                            <td>시작</td>
+                            <td>${emp.startDate || '-'}</td>
+                            <td><span class="status-badge status-${startDays <= 30 ? 'urgent' : 'upcoming'}">D-${startDays}</span></td>
+                        </tr>
+                    `;
+                    scheduleBody.innerHTML += row;
+                }
+            });
+
+            // 입사예정자
+            employees.filter(emp => emp.status === '입사예정').forEach(emp => {
+                const joinDays = getDaysUntil(emp.startDate);
+                
+                if (joinDays !== null && joinDays <= currentScheduleFilter) {
+                    const row = `
+                        <tr>
+                            <td><strong>${emp.name}</strong></td>
+                            <td>${emp.dept}</td>
+                            <td>입사예정</td>
+                            <td>입사</td>
+                            <td>${emp.startDate || '-'}</td>
+                            <td><span class="status-badge status-${joinDays <= 30 ? 'urgent' : 'upcoming'}">D-${joinDays}</span></td>
+                        </tr>
+                    `;
+                    scheduleBody.innerHTML += row;
+                }
+            });
+        }
+
+        function updateStatistics() {
+            const statusStats = {};
+            const deptStats = {};
+            const typeStats = {};
+
+            employees.forEach(emp => {
+                statusStats[emp.status] = (statusStats[emp.status] || 0) + 1;
+                deptStats[emp.dept] = (deptStats[emp.dept] || 0) + 1;
+                if (emp.type) {
+                    typeStats[emp.type] = (typeStats[emp.type] || 0) + 1;
+                }
+            });
+
+            const formatStats = (stats) => Object.entries(stats)
+                .sort((a, b) => b[1] - a[1])
+                .map(([key, val]) => `${key}: ${val}명`)
+                .join('<br>');
+
+            document.getElementById('statusStats').innerHTML = formatStats(statusStats) || '데이터 없음';
+            document.getElementById('deptStats').innerHTML = formatStats(deptStats).split('<br>').slice(0, 6).join('<br>');
+            document.getElementById('typeStats').innerHTML = formatStats(typeStats) || '유형 없음';
+        }
+
+        function filterTable(tabId) {
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const tableId = tabId === 'tab1' ? 'employeeTable' : '';
+            
+            if (!tableId) return;
+            
+            const rows = document.querySelectorAll(`#${tableId} tbody tr`);
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(search) ? '' : 'none';
+            });
+        }
+
+        function setFilter(status) {
+            currentStatusFilter = status;
+            document.querySelectorAll('#tab1 .filter-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            renderTables();
+        }
+
+        function setLeaveTypeFilter(type) {
+            currentLeaveTypeFilter = type;
+            document.querySelectorAll('#tab2 .filter-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            renderTables();
+        }
+
+        function setScheduleFilter(days) {
+            currentScheduleFilter = days;
+            document.querySelectorAll('#tab3 .filter-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            renderTables();
+        }
+
+        function switchTab(index) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            
+            document.getElementById(`tab${index}`).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // 페이지 로드 시 자동으로 데이터 불러오기
+        document.addEventListener('DOMContentLoaded', function() {
+            loadSheetData();
+        });
+
+        // Google Sheet 열기
+        function openGoogleSheet() {
+            const sheetUrl = 'https://docs.google.com/spreadsheets/d/17dCxN0pQIpTJ-AHXfqi1cBQ4H8yQUoT3g9tbbT3kOzI/edit?gid=359186458#gid=359186458';
+            window.open(sheetUrl, '_blank');
+        }
+    </script>
+</body>
+</html>
