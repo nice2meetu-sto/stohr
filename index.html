@@ -340,7 +340,7 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;font-f
 
 <div class="main-content" id="app">
 
-  <!-- 메인 화면 -->
+  <!-- 조회 모드 -->
   <div class="screen active" id="screen-admin">
     <div class="admin-layout">
       <div class="sidebar" id="admin-sidebar">
@@ -356,7 +356,6 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;font-f
 
         <!-- 대시보드 탭 -->
         <div id="tab-dashboard">
-
         <div id="section-mileage">
 <div class="user-wrap">
       <div class="search-row">
@@ -3624,7 +3623,7 @@ function calcExportExcel(){
 </div>
         </div>
 
-          <div id="section-overview" style="display:none">
+          <div id="section-overview">
             <div style="display:flex;gap:16px;margin-bottom:16px;align-items:stretch;flex-wrap:wrap">
               <div class="section-box" style="flex:1 1 380px;min-width:0;margin-bottom:0;position:relative">
                 <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap">
@@ -4421,33 +4420,32 @@ function populateDropdowns() {
 // =====================================================
 function renderTopbar() {
   const el = document.getElementById('topbar-right');
-  const dbBadge = isDbAuthenticated
-    ? `<a href="${GOOGLE_SHEET_URL}" target="_blank" class="mode-badge admin" style="text-decoration:none;cursor:pointer" title="구글 시트로 이동">관리자 모드 ↗</a>`
-    : '';
-  el.innerHTML = `
-    ${dbBadge}
-    <div class="tab-nav">
-      <button class="tab-btn ${currentTab==='dashboard'?'active':''}" onclick="switchAdminTab('dashboard')">대시보드</button>
-      <button class="tab-btn ${currentTab==='database'?'active':''}" onclick="switchToDatabase()">데이터베이스</button>
-    </div>
-    <button class="btn-outline" onclick="refreshAllData()" style="font-size:12px;padding:5px 12px">⟳ 데이터 새로고침</button>`;
+  if (currentTab === 'database') {
+    const dbBadge = `<a href="${GOOGLE_SHEET_URL}" target="_blank" class="mode-badge admin" style="text-decoration:none;cursor:pointer" title="구글 시트로 이동">관리자 모드 ↗</a>`;
+    el.innerHTML = `
+      ${dbBadge}
+      <button class="btn-outline" onclick="refreshAllData()" style="font-size:12px;padding:5px 12px">⟳ 데이터 새로고침</button>
+      <button class="btn-lock" onclick="exitAdmin()">나가기</button>`;
+  } else {
+    el.innerHTML = `
+      <span class="mode-badge user">조회 모드</span>
+      <button class="btn-outline" onclick="refreshAllData()" style="font-size:12px;padding:5px 12px">⟳ 데이터 새로고침</button>
+      <button class="btn-admin-enter" onclick="switchToDatabase()">데이터베이스</button>`;
+  }
 }
 
 async function refreshAllData() {
   await loadData();
   if (currentTab === 'dashboard') {
-    if (currentSection === 'mileage') {
-      // 마일리지 조회 - 현재 검색된 사람이 있으면 재검색
-      const name = document.getElementById('user-search-input').value.trim();
-      if (name) doUserSearch();
-    } else {
-      renderAdminDashboard();
-      // 항공사 상세를 보고 있었으면 갱신
-      if (document.getElementById('airline-detail-view').style.display !== 'none') {
-        const title = document.getElementById('airline-detail-title').textContent;
-        const air = title.replace('✈ ', '').replace(' 적립 내역', '');
-        if (air) showAirlineDetail(air);
-      }
+    renderAdminDashboard();
+    // 마일리지 조회 중 검색된 사람이 있으면 재검색
+    const name = document.getElementById('user-search-input').value.trim();
+    if (name) doUserSearch();
+    // 항공사 상세를 보고 있었으면 갱신
+    if (document.getElementById('airline-detail-view').style.display !== 'none') {
+      const title = document.getElementById('airline-detail-title').textContent;
+      const air = title.replace('✈ ', '').replace(' 적립 내역', '');
+      if (air) showAirlineDetail(air);
     }
   } else {
     // 데이터베이스 탭: 현재 활성화된 서브탭에 맞게 갱신
@@ -4475,11 +4473,15 @@ function closePasswordModal() { document.getElementById('pw-modal').classList.re
 function checkPassword() {
   if (document.getElementById('pw-input').value === ADMIN_PASSWORD) {
     closePasswordModal();
-    isDbAuthenticated = true;
-    if (_pwTarget === 'usage') {
+    if (_pwTarget === 'database') {
+      isDbAuthenticated = true;
+      switchAdminTab('database');
+    } else if (_pwTarget === 'usage') {
+      isDbAuthenticated = true;
       openUsageModal();
     } else {
-      switchAdminTab('database');
+      isDbAuthenticated = true;
+      enterDashboard();
     }
   } else {
     document.getElementById('pw-error').textContent = '비밀번호가 올바르지 않습니다.';
@@ -4848,6 +4850,8 @@ async function renderTripDash() {
 
 
 
+function exitAdmin() { isDbAuthenticated = false; switchAdminTab('dashboard'); }
+
 // =====================================================
 // [B] 사용자 모드
 // =====================================================
@@ -5053,9 +5057,20 @@ function resetUserFilters(skipRender) {
 }
 
 // =====================================================
-// 데이터베이스 탭 인증
+// 관리자 모드 진입
 // =====================================================
 let isDbAuthenticated = false;
+
+async function enterDashboard() {
+  if (allData.length === 0) await loadData();
+  switchAdminTab('dashboard');
+  renderAdminDashboard();
+}
+
+function enterAdminMode() {
+  // 기존 호환성 유지 (checkPassword에서 호출 가능)
+  enterDashboard();
+}
 
 function switchToDatabase() {
   if (isDbAuthenticated) {
@@ -7097,7 +7112,8 @@ function showToast(msg,isError){
 // 초기 실행
 (async()=>{
   await loadData();
-  renderTopbar();
+  switchAdminTab('dashboard');
+  renderAdminDashboard();
 })();
 </script>
 </body>
