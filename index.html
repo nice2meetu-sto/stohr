@@ -340,16 +340,24 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;font-f
 
 <div class="main-content" id="app">
 
-  <!-- 사용자 모드 -->
-  <div class="screen" id="screen-user">
+  <!-- 메인 화면 -->
+  <div class="screen active" id="screen-admin">
     <div class="admin-layout">
-      <div class="sidebar" id="user-sidebar">
-        <div class="sidebar-item active" data-usersection="mileage" onclick="switchUserSection(this)">🔍 마일리지 조회</div>
-        <div class="sidebar-item" data-usersection="calc" onclick="switchUserSection(this)">✈️ 여비계산기</div>
+      <div class="sidebar" id="admin-sidebar">
+        <div class="sidebar-item active" data-section="mileage" onclick="switchSection(this)">🔍 마일리지 조회</div>
+        <div class="sidebar-item" data-section="calc" onclick="switchSection(this)">✈️ 여비계산기</div>
+        <div class="sidebar-item" data-section="overview" onclick="switchSection(this)">📊 통합 현황</div>
+        <div class="sidebar-item" data-section="expire" onclick="switchSection(this)">⚠️ 소멸 예정</div>
+        <div class="sidebar-item" data-section="airline" onclick="switchSection(this)">✈️ 항공사별</div>
+        <div class="sidebar-item" data-section="personal" onclick="switchSection(this)">👤 개인 현황</div>
+        <div class="sidebar-item" data-section="trip-dash" onclick="switchSection(this)">🌏 출장 현황</div>
       </div>
-      <div class="admin-body" id="user-body">
+      <div class="admin-body" id="admin-body">
 
-        <div id="usersection-mileage">
+        <!-- 대시보드 탭 -->
+        <div id="tab-dashboard">
+
+        <div id="section-mileage">
 <div class="user-wrap">
       <div class="search-row">
         <div class="search-input-wrap">
@@ -422,7 +430,7 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;font-f
     </div>
         </div>
 
-        <div id="usersection-calc" style="display:none">
+        <div id="section-calc" style="display:none">
           <style id="calc-embed-style">
 #calc-embed *, #calc-embed *::before, #calc-embed *::after{box-sizing:border-box;margin:0;padding:0;}#calc-embed{
   --navy:#343B68;--navy-dark:#343B68;--navy-light:#E9F3FF;
@@ -3616,25 +3624,7 @@ function calcExportExcel(){
 </div>
         </div>
 
-      </div>
-    </div>
-  </div>
-
-  <!-- 관리자 모드 -->
-  <div class="screen" id="screen-admin">
-    <div class="admin-layout">
-      <div class="sidebar" id="admin-sidebar">
-        <div class="sidebar-item active" data-section="overview" onclick="switchSection(this)">📊 통합 현황</div>
-        <div class="sidebar-item" data-section="expire" onclick="switchSection(this)">⚠️ 소멸 예정</div>
-        <div class="sidebar-item" data-section="airline" onclick="switchSection(this)">✈️ 항공사별</div>
-        <div class="sidebar-item" data-section="personal" onclick="switchSection(this)">👤 개인 현황</div>
-        <div class="sidebar-item" data-section="trip-dash" onclick="switchSection(this)">🌏 출장 현황</div>
-      </div>
-      <div class="admin-body" id="admin-body">
-
-        <!-- 대시보드 탭 -->
-        <div id="tab-dashboard">
-          <div id="section-overview">
+          <div id="section-overview" style="display:none">
             <div style="display:flex;gap:16px;margin-bottom:16px;align-items:stretch;flex-wrap:wrap">
               <div class="section-box" style="flex:1 1 380px;min-width:0;margin-bottom:0;position:relative">
                 <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap">
@@ -4276,9 +4266,8 @@ const ADMIN_PASSWORD  = 'stoml';
 let allData       = [];
 let airlines      = [];
 let travelers     = [];
-let currentMode   = 'user';
 let currentTab    = 'dashboard';
-let currentSection= 'overview';
+let currentSection= 'mileage';
 let currentPersonalName = ''; // 개인현황 상세에서 현재 보고 있는 출장자 이름
 let expireDays    = 30;
 let dbPage        = 1;
@@ -4432,33 +4421,26 @@ function populateDropdowns() {
 // =====================================================
 function renderTopbar() {
   const el = document.getElementById('topbar-right');
-  if (currentMode === 'user') {
-    el.innerHTML = `
-      <span class="mode-badge user">조회 모드</span>
-      <button class="btn-outline" onclick="refreshAllData()" style="font-size:12px;padding:5px 12px">⟳ 데이터 새로고침</button>
-      <button class="btn-admin-enter" onclick="_pwTarget='dashboard'; openPasswordModal();">관리자 모드</button>`;
-  } else {
-    const dbBadge = `<a href="${GOOGLE_SHEET_URL}" target="_blank" class="mode-badge admin" style="text-decoration:none;cursor:pointer" title="구글 시트로 이동">관리자 모드 ↗</a>`;
-    el.innerHTML = `
-      ${dbBadge}
-      <div class="tab-nav">
-        <button class="tab-btn ${currentTab==='dashboard'?'active':''}" onclick="switchAdminTab('dashboard')">대시보드</button>
-        <button class="tab-btn ${currentTab==='database'?'active':''}" onclick="switchToDatabase()">데이터베이스</button>
-      </div>
-      <button class="btn-outline" onclick="refreshAllData()" style="font-size:12px;padding:5px 12px">⟳ 데이터 새로고침</button>
-      <button class="btn-lock" onclick="exitAdmin()">나가기</button>`;
-  }
+  const dbBadge = isDbAuthenticated
+    ? `<a href="${GOOGLE_SHEET_URL}" target="_blank" class="mode-badge admin" style="text-decoration:none;cursor:pointer" title="구글 시트로 이동">관리자 모드 ↗</a>`
+    : '';
+  el.innerHTML = `
+    ${dbBadge}
+    <div class="tab-nav">
+      <button class="tab-btn ${currentTab==='dashboard'?'active':''}" onclick="switchAdminTab('dashboard')">대시보드</button>
+      <button class="tab-btn ${currentTab==='database'?'active':''}" onclick="switchToDatabase()">데이터베이스</button>
+    </div>
+    <button class="btn-outline" onclick="refreshAllData()" style="font-size:12px;padding:5px 12px">⟳ 데이터 새로고침</button>`;
 }
 
 async function refreshAllData() {
   await loadData();
-  if (currentMode === 'user') {
-    // 사용자 모드 - 현재 검색된 사람이 있으면 재검색
-    const name = document.getElementById('user-search-input').value.trim();
-    if (name) doUserSearch();
-  } else {
-    // 관리자 모드 - 현재 탭 갱신
-    if (currentTab === 'dashboard') {
+  if (currentTab === 'dashboard') {
+    if (currentSection === 'mileage') {
+      // 마일리지 조회 - 현재 검색된 사람이 있으면 재검색
+      const name = document.getElementById('user-search-input').value.trim();
+      if (name) doUserSearch();
+    } else {
       renderAdminDashboard();
       // 항공사 상세를 보고 있었으면 갱신
       if (document.getElementById('airline-detail-view').style.display !== 'none') {
@@ -4466,23 +4448,16 @@ async function refreshAllData() {
         const air = title.replace('✈ ', '').replace(' 적립 내역', '');
         if (air) showAirlineDetail(air);
       }
+    }
+  } else {
+    // 데이터베이스 탭: 현재 활성화된 서브탭에 맞게 갱신
+    if (dbSubTab === 'trip') {
+      await loadTrips();
     } else {
-      // 데이터베이스 탭: 현재 활성화된 서브탭에 맞게 갱신
-      if (dbSubTab === 'trip') {
-        await loadTrips();
-      } else {
-        applyDbFilters();
-      }
+      applyDbFilters();
     }
   }
   showToast('데이터를 새로고침했습니다');
-}
-
-function showScreen(name) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById('screen-' + name).classList.add('active');
-  currentMode = name;
-  renderTopbar();
 }
 
 // =====================================================
@@ -4500,15 +4475,11 @@ function closePasswordModal() { document.getElementById('pw-modal').classList.re
 function checkPassword() {
   if (document.getElementById('pw-input').value === ADMIN_PASSWORD) {
     closePasswordModal();
-    if (_pwTarget === 'database') {
-      isDbAuthenticated = true;
-      switchAdminTab('database');
-    } else if (_pwTarget === 'usage') {
-      isDbAuthenticated = true;
+    isDbAuthenticated = true;
+    if (_pwTarget === 'usage') {
       openUsageModal();
     } else {
-      isDbAuthenticated = true;
-      enterDashboard();
+      switchAdminTab('database');
     }
   } else {
     document.getElementById('pw-error').textContent = '비밀번호가 올바르지 않습니다.';
@@ -4877,8 +4848,6 @@ async function renderTripDash() {
 
 
 
-function exitAdmin() { isDbAuthenticated = false; showScreen('user'); }
-
 // =====================================================
 // [B] 사용자 모드
 // =====================================================
@@ -5084,24 +5053,9 @@ function resetUserFilters(skipRender) {
 }
 
 // =====================================================
-// 관리자 모드 진입
+// 데이터베이스 탭 인증
 // =====================================================
 let isDbAuthenticated = false;
-
-async function enterDashboard() {
-  if (allData.length === 0) await loadData();
-  showScreen('admin');
-  switchAdminTab('dashboard');
-  // 전체 현황 섹션을 기본으로
-  const overviewItem = document.querySelector('#admin-sidebar .sidebar-item[data-section="overview"]');
-  if (overviewItem) switchSection(overviewItem);
-  renderAdminDashboard();
-}
-
-function enterAdminMode() {
-  // 기존 호환성 유지 (checkPassword에서 호출 가능)
-  enterDashboard();
-}
 
 function switchToDatabase() {
   if (isDbAuthenticated) {
@@ -5126,7 +5080,7 @@ function switchSection(el) {
   document.querySelectorAll('#admin-sidebar .sidebar-item').forEach(s => s.classList.remove('active'));
   el.classList.add('active');
   currentSection = el.dataset.section;
-  ['overview','expire','airline','personal','trip-dash'].forEach(s => {
+  ['mileage','calc','overview','expire','airline','personal','trip-dash'].forEach(s => {
     document.getElementById('section-'+s).style.display = s === currentSection ? '' : 'none';
   });
   if (currentSection === 'expire')     renderExpireSection();
@@ -5134,17 +5088,6 @@ function switchSection(el) {
   if (currentSection === 'personal')   renderPersonalCards();
   if (currentSection === 'overview')   { renderOverviewTable(); renderOverviewCalendar(); }
   if (currentSection === 'trip-dash')  renderTripDash();
-}
-
-// =====================================================
-// 사용자 모드 사이드바 (마일리지 조회 / 여비계산기)
-// =====================================================
-function switchUserSection(el) {
-  document.querySelectorAll('#user-sidebar .sidebar-item').forEach(s => s.classList.remove('active'));
-  el.classList.add('active');
-  const sec = el.dataset.usersection;
-  document.getElementById('usersection-mileage').style.display = sec === 'mileage' ? '' : 'none';
-  document.getElementById('usersection-calc').style.display    = sec === 'calc'    ? '' : 'none';
 }
 
 // =====================================================
@@ -7154,7 +7097,7 @@ function showToast(msg,isError){
 // 초기 실행
 (async()=>{
   await loadData();
-  showScreen('user');
+  renderTopbar();
 })();
 </script>
 </body>
