@@ -32,7 +32,6 @@ input,select,textarea{font-family:inherit;font-size:14px}
 .mode-badge{display:inline-block;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;letter-spacing:.03em}
 .mode-badge.user{background:var(--valid-bg);color:var(--valid)}
 .mode-badge.admin{background:var(--main-lt);color:var(--main-dk)}
-.tab-nav{display:flex;gap:2px}
 .tab-btn{font-size:13px;font-weight:500;padding:5px 14px;border-radius:6px;border:none;background:transparent;color:var(--text-sub);transition:background .15s,color .15s}
 .tab-btn.active{background:var(--main-lt);color:var(--main)}
 .tab-btn:hover:not(.active){background:var(--bg-page)}
@@ -79,7 +78,6 @@ input,select,textarea{font-family:inherit;font-size:14px}
 .mileage-use{font-weight:700;color:var(--use-color)}
 .mileage-none{color:var(--text-hint)}
 .status-badge{display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;white-space:nowrap}
-.status-badge.no-bg{background:transparent !important;padding-left:0;padding-right:0}
 .st-valid{background:var(--valid-bg);color:var(--valid)}
 .st-warn90{background:var(--warn90-bg);color:var(--warn90)}
 .st-warn60{background:var(--warn60-bg);color:var(--warn60)}
@@ -103,11 +101,9 @@ input,select,textarea{font-family:inherit;font-size:14px}
 .td-cal-cell.td-has1{background:#E6F1FB;color:#0C447C}
 .td-cal-cell.td-has2{background:#B5D4F4;color:#0C447C;font-weight:700}
 .td-cal-cell.td-has3{background:#378ADD;color:#fff;font-weight:700}
-.td-trip-dot{position:absolute;bottom:3px;left:50%;transform:translateX(-50%);width:4px;height:4px;border-radius:50%;background:currentColor;opacity:.7}
 .td-yr-bars{display:flex;align-items:flex-end;gap:8px;height:80px;border-bottom:1px solid var(--border);padding-bottom:0}
 .td-yr-col{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:36px}
 .td-yr-fill{width:32px;border-radius:4px 4px 0 0;transition:height .4s}
-.td-yr-label{font-size:10px;color:var(--text-sub);margin-top:2px}
 .td-cal-tooltip{position:fixed;z-index:999;background:#fff;border:1px solid var(--border);border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,.12);padding:10px 13px;font-size:12px;max-width:280px;pointer-events:none;display:none}
 .td-cal-tooltip .tt-title{font-weight:700;color:var(--main);margin-bottom:6px;font-size:11px}
 .td-cal-tooltip .tt-row{padding:4px 0;border-bottom:1px solid var(--border);line-height:1.5}
@@ -117,7 +113,6 @@ input,select,textarea{font-family:inherit;font-size:14px}
 .td-cal-cell.td-has1,.td-cal-cell.td-has2,.td-cal-cell.td-has3{cursor:pointer}
 .td-section-title{font-size:13px;font-weight:700;color:var(--main);margin-bottom:10px}
 .td-metric .td-sub{font-size:11px;color:var(--text-sub);margin-top:2px}
-.td-yr-label{font-size:10px;color:var(--text-sub)}
 
 .st-invalid{background:var(--invalid-bg);color:var(--invalid)}
 .st-void{background:#f0f1f5;color:var(--text-hint)}
@@ -155,17 +150,6 @@ input,select,textarea{font-family:inherit;font-size:14px}
 .a-card.accent .value{color:#0968C6}
 .a-card.warn .value{color:var(--warn30)}
 .a-card.muted .value{color:var(--invalid)}
-.alert-banner{border-radius:8px;padding:11px 16px;margin-bottom:14px;display:flex;align-items:center;gap:10px;font-size:13px;font-weight:500}
-.alert-banner.red{background:var(--warn30-bg);color:var(--warn30);border:1px solid #f7c1c1}
-.alert-banner.orange{background:var(--warn60-bg);color:var(--warn60);border:1px solid #fcd09a}
-.alert-banner.yellow{background:var(--warn90-bg);color:var(--warn90);border:1px solid #fac775}
-
-/* EXPIRE TABS */
-.expire-tabs{display:flex;gap:6px;margin-bottom:16px}
-.expire-tab{padding:5px 14px;border-radius:20px;font-size:12px;font-weight:700;border:1.5px solid var(--border);background:#fff;color:var(--text-sub);cursor:pointer}
-.expire-tab.active-30{border-color:var(--warn30);background:var(--warn30-bg);color:var(--warn30)}
-.expire-tab.active-60{border-color:var(--warn60);background:var(--warn60-bg);color:var(--warn60)}
-.expire-tab.active-90{border-color:var(--warn90);background:var(--warn90-bg);color:var(--warn90)}
 
 /* AIRLINE CARDS */
 .airline-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
@@ -310,7 +294,7 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;font-f
 
 /* 등장 애니메이션 — 페이드인 + 슬라이드업 (호버 transform 보존 위해 backwards) */
 @keyframes appleFadeUp{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
-.s-card,.a-card,.airline-card,.section-box,.alert-banner{animation:appleFadeUp .6s cubic-bezier(.16,1,.3,1) backwards}
+.s-card,.a-card,.airline-card,.section-box{animation:appleFadeUp .6s cubic-bezier(.16,1,.3,1) backwards}
 .s-card:nth-child(2),.a-card:nth-child(2),.airline-card:nth-child(2){animation-delay:.06s}
 .s-card:nth-child(3),.a-card:nth-child(3),.airline-card:nth-child(3){animation-delay:.12s}
 .s-card:nth-child(4),.a-card:nth-child(4),.airline-card:nth-child(4){animation-delay:.18s}
@@ -1391,7 +1375,7 @@ function ovHideTip() {
   document.getElementById('ov-cal-tooltip').style.display = 'none';
 }
 document.addEventListener('click', function(e) {
-  if (!e.target.closest('#ov-cal-grid-wrap') && !e.target.closest('#mil-cal-grid-wrap') && !e.target.closest('#ov-cal-tooltip')) {
+  if (!e.target.closest('#mil-cal-grid-wrap') && !e.target.closest('#ov-cal-tooltip')) {
     _ovTipPinned = false;
     const tt = document.getElementById('ov-cal-tooltip');
     if (tt) tt.style.display = 'none';
@@ -1412,7 +1396,7 @@ function ovCalNext() {
 async function renderOverviewCalendar() {
   if (allTrips.length === 0) await loadTrips();
 
-  ['ov','mil'].forEach(p => { const lab = document.getElementById(p+'-cal-label'); if (lab) lab.textContent = `${_ovCalYear}년 ${_ovCalMonth+1}월`; });
+  { const lab = document.getElementById('mil-cal-label'); if (lab) lab.textContent = `${_ovCalYear}년 ${_ovCalMonth+1}월`; }
 
   const firstDay   = new Date(_ovCalYear, _ovCalMonth, 1).getDay();
   const daysInMonth= new Date(_ovCalYear, _ovCalMonth+1, 0).getDate();
@@ -1453,7 +1437,7 @@ async function renderOverviewCalendar() {
   }
   calHtml += '</div>';
 
-  ['ov','mil'].forEach(p => { const w = document.getElementById(p+'-cal-grid-wrap'); if (w) w.innerHTML = calHtml; });
+  { const w = document.getElementById('mil-cal-grid-wrap'); if (w) w.innerHTML = calHtml; }
 }
 
 async function renderTripDash() {
@@ -1879,11 +1863,6 @@ async function enterDashboard() {
   renderAdminDashboard();
 }
 
-function enterAdminMode() {
-  // 기존 호환성 유지 (checkPassword에서 호출 가능)
-  enterDashboard();
-}
-
 function switchToDatabase() {
   if (isDbAuthenticated) {
     switchAdminTab('database');
@@ -1964,7 +1943,7 @@ function renderAdminSummaryCards() {
     <div class="a-card"><div class="label">전체 적립 합계</div><div class="value">${fmtNum(totalEarn)}<span class="unit"> 마일</span></div></div>
     <div class="a-card warn"><div class="label">소멸 예정 (90일)</div><div class="value">${fmtNum(exp90)}<span class="unit"> 마일</span></div></div>
     <div class="a-card muted"><div class="label">불용 합계</div><div class="value">${fmtNum(voidSum)}<span class="unit"> 마일</span></div></div>`;
-  ['admin-summary-cards','mil-summary-cards'].forEach(id => { const el = document.getElementById(id); if (el) el.innerHTML = cardsHtml; });
+  { const el = document.getElementById('mil-summary-cards'); if (el) el.innerHTML = cardsHtml; }
 }
 
 // 전체 내역 테이블 (내림차순, 비고 포함)
