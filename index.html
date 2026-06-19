@@ -352,6 +352,7 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;font-f
         <div class="sidebar-item" data-section="trip-dash" onclick="switchSection(this)">🌏 출장 현황</div>
       </div>
       <div class="admin-body" id="admin-body">
+        <div id="ov-cal-tooltip" class="td-cal-tooltip"></div>
 
         <!-- 대시보드 탭 -->
         <div id="tab-dashboard">
@@ -359,11 +360,25 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;font-f
 <div class="user-wrap">
       <div class="search-row">
         <div class="search-input-wrap">
-          <input type="text" class="search-input" id="user-search-input" placeholder="이름 입력 후 검색" onkeydown="if(event.key==='Enter') doUserSearch()">
+          <input type="text" class="search-input" id="user-search-input" placeholder="이름 입력 후 검색" oninput="onUserSearchInput()" onkeydown="if(event.key==='Enter') doUserSearch()">
         </div>
         <button class="btn-search" onclick="doUserSearch()">검색</button>
         <span class="search-hint" id="user-search-hint"></span>
         <span id="today-date-label" style="margin-left:auto;font-size:11px;color:var(--text-hint)"></span>
+      </div>
+      <div id="mil-dashboard" style="margin-bottom:24px">
+        <div style="display:flex;gap:16px;align-items:stretch;flex-wrap:wrap">
+          <div class="section-box" style="flex:1 1 360px;min-width:0;margin-bottom:0;position:relative">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap">
+              <div class="section-box-title" style="margin-bottom:0">🌏 이번 달 출장 캘린더</div>
+              <button class="btn-outline" onclick="ovCalPrev()" style="font-size:11px;padding:4px 9px;margin-left:auto">◀</button>
+              <span id="mil-cal-label" style="font-size:12px;font-weight:700;min-width:74px;text-align:center"></span>
+              <button class="btn-outline" onclick="ovCalNext()" style="font-size:11px;padding:4px 9px">▶</button>
+            </div>
+            <div id="mil-cal-grid-wrap"></div>
+          </div>
+          <div class="admin-cards" id="mil-summary-cards" style="flex:1 1 300px;min-width:0;grid-template-columns:repeat(2,1fr);margin-bottom:0"></div>
+        </div>
       </div>
       <div class="summary-cards" id="user-summary"></div>
       <div class="table-section" id="user-table-section" style="display:none">
@@ -438,7 +453,6 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;font-f
                   <span id="ov-cal-label" style="font-size:12px;font-weight:700;min-width:74px;text-align:center"></span>
                   <button class="btn-outline" onclick="ovCalNext()" style="font-size:11px;padding:4px 9px">▶</button>
                 </div>
-                <div id="ov-cal-tooltip" class="td-cal-tooltip"></div>
                 <div id="ov-cal-grid-wrap"></div>
               </div>
               <div class="admin-cards" id="admin-summary-cards" style="flex:1 1 320px;min-width:0;grid-template-columns:repeat(2,1fr);margin-bottom:0"></div>
@@ -1399,7 +1413,7 @@ function ovHideTip() {
   document.getElementById('ov-cal-tooltip').style.display = 'none';
 }
 document.addEventListener('click', function(e) {
-  if (!e.target.closest('#ov-cal-grid-wrap') && !e.target.closest('#ov-cal-tooltip')) {
+  if (!e.target.closest('#ov-cal-grid-wrap') && !e.target.closest('#mil-cal-grid-wrap') && !e.target.closest('#ov-cal-tooltip')) {
     _ovTipPinned = false;
     const tt = document.getElementById('ov-cal-tooltip');
     if (tt) tt.style.display = 'none';
@@ -1420,7 +1434,7 @@ function ovCalNext() {
 async function renderOverviewCalendar() {
   if (allTrips.length === 0) await loadTrips();
 
-  document.getElementById('ov-cal-label').textContent = `${_ovCalYear}년 ${_ovCalMonth+1}월`;
+  ['ov','mil'].forEach(p => { const lab = document.getElementById(p+'-cal-label'); if (lab) lab.textContent = `${_ovCalYear}년 ${_ovCalMonth+1}월`; });
 
   const firstDay   = new Date(_ovCalYear, _ovCalMonth, 1).getDay();
   const daysInMonth= new Date(_ovCalYear, _ovCalMonth+1, 0).getDate();
@@ -1461,7 +1475,7 @@ async function renderOverviewCalendar() {
   }
   calHtml += '</div>';
 
-  document.getElementById('ov-cal-grid-wrap').innerHTML = calHtml;
+  ['ov','mil'].forEach(p => { const w = document.getElementById(p+'-cal-grid-wrap'); if (w) w.innerHTML = calHtml; });
 }
 
 async function renderTripDash() {
@@ -1682,6 +1696,18 @@ function filterUserByAirline(airline) {
   document.getElementById('user-table-section').scrollIntoView({behavior:'smooth'});
 }
 
+// 검색어를 비우면 검색 전 상태(캘린더·통계 대시보드)로 복원
+function onUserSearchInput() {
+  const name = document.getElementById('user-search-input').value.trim();
+  if (!name) {
+    document.getElementById('user-search-hint').textContent = '';
+    document.getElementById('user-summary').innerHTML = '';
+    document.getElementById('user-table-section').style.display = 'none';
+    document.getElementById('usage-preview-trigger-wrap').style.display = 'none';
+    document.getElementById('mil-dashboard').style.display = '';
+  }
+}
+
 function doUserSearch() {
   const name = document.getElementById('user-search-input').value.trim();
   if (!name) { showToast('이름을 입력해주세요', true); return; }
@@ -1692,8 +1718,10 @@ function doUserSearch() {
     document.getElementById('user-summary').innerHTML = '';
     document.getElementById('user-table-section').style.display = 'none';
     document.getElementById('usage-preview-trigger-wrap').style.display = 'none';
+    document.getElementById('mil-dashboard').style.display = '';
     return;
   }
+  document.getElementById('mil-dashboard').style.display = 'none';
   // 내역 표시는 재단_db + 주식회사_db만 (사용실적_db 제외)
   const tableRows = rows.filter(isCalcSource);
   document.getElementById('user-search-hint').textContent = `'${name}' 검색 완료 (${tableRows.length}건)`;
@@ -1904,6 +1932,7 @@ function switchSection(el) {
   ['mileage','overview','expire','airline','personal','trip-dash'].forEach(s => {
     document.getElementById('section-'+s).style.display = s === currentSection ? '' : 'none';
   });
+  if (currentSection === 'mileage')    { renderAdminSummaryCards(); renderOverviewCalendar(); }
   if (currentSection === 'expire')     renderExpireSection();
   if (currentSection === 'airline')    renderAirlineCards();
   if (currentSection === 'personal')   renderPersonalCards();
@@ -1917,6 +1946,7 @@ function switchSection(el) {
 function renderAdminDashboard() {
   renderAdminSummaryCards();
   renderOverviewTable();
+  renderOverviewCalendar();
 }
 
 function renderExpireBanners() {
@@ -1952,11 +1982,12 @@ function renderAdminSummaryCards() {
   const exp90      = validRows.filter(r=>{const d=getDaysLeft(r.expire_date);return d!==null&&d>=0&&d<=90&&r.category_raw==='적립';}).reduce((s,r)=>s+r.available,0);
   // ④ 불용 합계: 무효+불용인 잔여 합계
   const voidSum    = calcData.filter(r=>r.is_valid_raw==='무효'&&r.category_raw==='불용').reduce((s,r)=>s+r.available,0);
-  document.getElementById('admin-summary-cards').innerHTML = `
+  const cardsHtml = `
     <div class="a-card accent"><div class="label">현재 사용 가능 마일리지</div><div class="value">${fmtNum(Math.max(0,available))}<span class="unit"> 마일</span></div></div>
     <div class="a-card"><div class="label">전체 적립 합계</div><div class="value">${fmtNum(totalEarn)}<span class="unit"> 마일</span></div></div>
     <div class="a-card warn"><div class="label">소멸 예정 (90일)</div><div class="value">${fmtNum(exp90)}<span class="unit"> 마일</span></div></div>
     <div class="a-card muted"><div class="label">불용 합계</div><div class="value">${fmtNum(voidSum)}<span class="unit"> 마일</span></div></div>`;
+  ['admin-summary-cards','mil-summary-cards'].forEach(id => { const el = document.getElementById(id); if (el) el.innerHTML = cardsHtml; });
 }
 
 // 전체 내역 테이블 (내림차순, 비고 포함)
