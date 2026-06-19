@@ -1064,7 +1064,9 @@ let travelers     = [];
 let currentTab    = 'dashboard';
 let currentSection= 'mileage';
 let currentPersonalName = ''; // 개인현황 상세에서 현재 보고 있는 출장자 이름
-let expireDays    = null;   // null = 전체 내역, 30/90/180 = 해당 기간 필터
+let expireDays    = null;   // null = 전체 내역, 30/90/180 = 해당 구간 필터
+// 소멸 예정 카드별 구간(겹치지 않음): 카드 통계 집계와 동일하게 매칭
+const EXPIRE_RANGE = { 30: [0, 30], 90: [31, 90], 180: [91, 180] };
 let dbPage        = 1;
 let ovPage        = 1;
 const PER_PAGE    = 50;
@@ -1979,9 +1981,10 @@ function renderOverviewTable() {
   ovFiltered = allData.filter(r => {
     if (r.is_valid_raw !== '유효') return false;   // 유효여부 = 유효
     if (r.category_raw !== '적립') return false;   // 구분 = 적립
-    if (expireDays != null) {                      // 소멸 기간 배너 선택 시
+    if (expireDays != null) {                      // 소멸 기간 카드 선택 시: 해당 구간만
       const dl = getDaysLeft(r.expire_date);
-      if (dl === null || dl < 0 || dl > expireDays) return false;
+      const rg = EXPIRE_RANGE[expireDays];
+      if (dl === null || !rg || dl < rg[0] || dl > rg[1]) return false;
     }
     if (airline  && !(r.airline||'').toLowerCase().includes(airline)) return false;
     if (traveler && !(r.traveler||'').toLowerCase().includes(traveler)) return false;
