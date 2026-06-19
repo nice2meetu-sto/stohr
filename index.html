@@ -345,7 +345,6 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;font-f
     <div class="admin-layout">
       <div class="sidebar" id="admin-sidebar">
         <div class="sidebar-item active" data-section="mileage" onclick="switchSection(this)">🔍 마일리지 조회</div>
-        <div class="sidebar-item" data-section="overview" onclick="switchSection(this)">📊 통합 현황</div>
         <div class="sidebar-item" data-section="expire" onclick="switchSection(this)">⚠️ 소멸 예정</div>
         <div class="sidebar-item" data-section="airline" onclick="switchSection(this)">✈️ 항공사별</div>
         <div class="sidebar-item" data-section="personal" onclick="switchSection(this)">👤 개인 현황</div>
@@ -444,19 +443,8 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;font-f
         </div>
 
 
-          <div id="section-overview" style="display:none">
-            <div style="display:flex;gap:16px;margin-bottom:16px;align-items:stretch;flex-wrap:wrap">
-              <div class="section-box" style="flex:1 1 380px;min-width:0;margin-bottom:0;position:relative">
-                <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap">
-                  <div class="section-box-title" style="margin-bottom:0">🌏 이번 달 출장 캘린더</div>
-                  <button class="btn-outline" onclick="ovCalPrev()" style="font-size:11px;padding:4px 9px;margin-left:auto">◀</button>
-                  <span id="ov-cal-label" style="font-size:12px;font-weight:700;min-width:74px;text-align:center"></span>
-                  <button class="btn-outline" onclick="ovCalNext()" style="font-size:11px;padding:4px 9px">▶</button>
-                </div>
-                <div id="ov-cal-grid-wrap"></div>
-              </div>
-              <div class="admin-cards" id="admin-summary-cards" style="flex:1 1 320px;min-width:0;grid-template-columns:repeat(2,1fr);margin-bottom:0"></div>
-            </div>
+          <div id="section-expire" style="display:none">
+            <div class="summary-cards" id="expire-banners"></div>
             <div class="section-box">
               <div class="section-box-title">전체 적립·사용 내역</div>
               <div class="filter-row" style="margin-bottom:12px;padding:0;border:none;background:transparent;flex-wrap:wrap">
@@ -485,18 +473,6 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;font-f
                 </table>
               </div>
               <div class="pagination" id="overview-pagination"></div>
-            </div>
-          </div>
-
-          <div id="section-expire" style="display:none">
-            <div class="summary-cards" id="expire-banners"></div>
-            <div class="table-section" style="margin-bottom:0">
-              <div class="table-scroll">
-                <table class="data-table">
-                  <thead><tr><th>출장자</th><th>항공사</th><th>마일리지</th><th>유효기간</th><th>남은 일수</th><th>출처</th></tr></thead>
-                  <tbody id="expire-table-body"></tbody>
-                </table>
-              </div>
             </div>
           </div>
 
@@ -1088,7 +1064,7 @@ let travelers     = [];
 let currentTab    = 'dashboard';
 let currentSection= 'mileage';
 let currentPersonalName = ''; // 개인현황 상세에서 현재 보고 있는 출장자 이름
-let expireDays    = 30;
+let expireDays    = null;   // null = 전체 내역, 30/90/180 = 해당 기간 필터
 let dbPage        = 1;
 let ovPage        = 1;
 const PER_PAGE    = 50;
@@ -1929,14 +1905,13 @@ function switchSection(el) {
   document.querySelectorAll('#admin-sidebar .sidebar-item').forEach(s => s.classList.remove('active'));
   el.classList.add('active');
   currentSection = el.dataset.section;
-  ['mileage','overview','expire','airline','personal','trip-dash'].forEach(s => {
+  ['mileage','expire','airline','personal','trip-dash'].forEach(s => {
     document.getElementById('section-'+s).style.display = s === currentSection ? '' : 'none';
   });
   if (currentSection === 'mileage')    { renderAdminSummaryCards(); renderOverviewCalendar(); }
   if (currentSection === 'expire')     renderExpireSection();
   if (currentSection === 'airline')    renderAirlineCards();
   if (currentSection === 'personal')   renderPersonalCards();
-  if (currentSection === 'overview')   { renderOverviewTable(); renderOverviewCalendar(); }
   if (currentSection === 'trip-dash')  renderTripDash();
 }
 
@@ -2004,6 +1979,10 @@ function renderOverviewTable() {
   ovFiltered = allData.filter(r => {
     if (r.is_valid_raw !== '유효') return false;   // 유효여부 = 유효
     if (r.category_raw !== '적립') return false;   // 구분 = 적립
+    if (expireDays != null) {                      // 소멸 기간 배너 선택 시
+      const dl = getDaysLeft(r.expire_date);
+      if (dl === null || dl < 0 || dl > expireDays) return false;
+    }
     if (airline  && !(r.airline||'').toLowerCase().includes(airline)) return false;
     if (traveler && !(r.traveler||'').toLowerCase().includes(traveler)) return false;
     if (from     && r.depart_date < from) return false;
@@ -2024,7 +2003,7 @@ function renderOverviewPage() {
   const rows = ovFiltered.slice((ovPage-1)*PER_PAGE, ovPage*PER_PAGE);
 
   if (rows.length === 0) {
-    document.getElementById('overview-table-body').innerHTML = `<tr><td colspan="10" class="empty-state"><p>데이터가 없습니다</p></td></tr>`;
+    document.getElementById('overview-table-body').innerHTML = `<tr><td colspan="12" class="empty-state"><p>데이터가 없습니다</p></td></tr>`;
     document.getElementById('overview-pagination').innerHTML = '';
     return;
   }
@@ -2059,37 +2038,19 @@ function resetOverviewFilters() {
   document.getElementById('ov-filter-to').value='';
   document.getElementById('ov-sort-field').value='expire';
   document.getElementById('ov-sort-dir').value='asc';
+  expireDays = null;          // 기간 필터 해제 → 전체 내역
+  renderExpireBanners();      // 배너 활성 표시 초기화
   renderOverviewTable();
 }
 
 // 소멸 예정
 function setExpireTab(days, btn) {
-  expireDays = days;
+  expireDays = (expireDays === days) ? null : days;   // 같은 기간 다시 누르면 전체 해제
   renderExpireSection();
 }
 function renderExpireSection() {
   renderExpireBanners();
-  const rows = allData.filter(r => {
-    if (!isValidRow(r)) return false;              // 유효여부 = '유효'
-    if (r.category_raw !== '적립') return false;   // 구분 = '적립'
-    const d = getDaysLeft(r.expire_date);
-    return d !== null && d >= 0 && d <= expireDays;
-  }).sort((a,b) => (a.expire_date||'').localeCompare(b.expire_date||''));
-  if (!rows.length) {
-    document.getElementById('expire-table-body').innerHTML = `<tr><td colspan="6" class="empty-state"><p>${expireDays}일 이내 소멸 예정 마일리지가 없습니다</p></td></tr>`;
-    return;
-  }
-  let html = '';
-  rows.forEach(r => {
-    const d = getDaysLeft(r.expire_date);
-    const cls = d<=30?'warn30':d<=90?'warn60':'warn90';
-    const rowCls = getOverviewRowBgClass(r);
-    html += `<tr class="${rowCls}"><td>${r.traveler}</td><td>${r.airline}</td><td class="mileage-earn">${fmtAvailable(r)}</td>
-      <td class="nowrap">${fmt(r.expire_date)}</td>
-      <td><span class="status-badge st-${cls} no-bg">D-${d}</span></td>
-      <td><span class="${r.source==='재단'?'src-badge':'src-badge src-corp'}">${r.source}</span></td></tr>`;
-  });
-  document.getElementById('expire-table-body').innerHTML = html;
+  renderOverviewTable();
 }
 
 // 항공사별 카드 (클릭하면 상세)
