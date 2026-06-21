@@ -829,7 +829,13 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;font-f
         <div class="form-group full"><label>출장 품의 제목</label><input type="text" id="f-trip-title"></div>
         <div class="form-group"><label>출장품의번호</label><input type="text" id="f-trip-doc"></div>
         <div class="form-group"><label>항공사</label><input type="text" id="f-airline" list="airline-list"><datalist id="airline-list"></datalist></div>
-        <div class="form-group"><label>사용/적립 마일리지</label><input type="number" id="f-mileage" placeholder="10000 (사용시 -10000)" oninput="syncAvailable()"></div>
+        <div class="form-group">
+          <div style="display:flex;align-items:center;gap:10px">
+            <label>사용/적립 마일리지</label>
+            <label style="font-weight:400;font-size:11px;color:var(--text-sub);cursor:pointer;display:inline-flex;align-items:center;gap:3px"><input type="checkbox" id="f-no-accrual" onchange="toggleNoAccrual(this)"> 미적립(-)</label>
+          </div>
+          <input type="number" id="f-mileage" placeholder="10000 (사용시 -10000)" oninput="syncAvailable()">
+        </div>
         <div class="form-group"><label>잔여 마일리지</label><input type="number" id="f-available" placeholder="미입력시 사용/적립과 동일 (잔여)"><span class="form-hint">차감이 있는 경우 직접 입력</span></div>
         <div class="form-group"><label>항공편명</label><input type="text" id="f-flight-no" placeholder="KE001"></div>
         <div class="form-group">
@@ -3254,6 +3260,10 @@ function openForm(rowData) {
   const isBulkMode = !rowData && checkedIds.size > 0;
   const isNewMode  = !rowData && !isBulkMode; // 신규 추가 모드
 
+  // 미적립 체크박스 초기화 (열 때마다 해제 → 숫자 입력칸 복원)
+  const _noAcc = document.getElementById('f-no-accrual');
+  if (_noAcc) { _noAcc.checked = false; toggleNoAccrual(_noAcc); }
+
   // 출장자/직급 표시 영역 토글: 신규 추가만 표, 그 외엔 단일 입력
   document.getElementById('f-traveler-table-wrap').style.display  = isNewMode ? '' : 'none';
   document.getElementById('f-traveler-single-wrap').style.display = isNewMode ? 'none' : '';
@@ -3303,6 +3313,10 @@ function openForm(rowData) {
     'f-memo':     rowData?.memo||'',
   };
   Object.entries(fields).forEach(([id,val])=>{const el=document.getElementById(id);if(el)el.value=val;});
+  // 기존 행이 미적립('-')이면 미적립 체크 활성화
+  if (_noAcc && (rowData?.mileage === '-' || rowData?.available === '-')) {
+    _noAcc.checked = true; toggleNoAccrual(_noAcc);
+  }
   document.getElementById('form-modal').classList.add('open');
 }
 
@@ -3340,6 +3354,16 @@ function syncAvailable() {
   if (available.value === '' || available.value === available.dataset.lastAuto) {
     available.value = mileage;
     available.dataset.lastAuto = mileage;
+  }
+}
+
+// 미적립 체크: 적립/사용·잔여를 '-'로 채우고 읽기전용 (숫자칸이라 type을 text로 전환)
+function toggleNoAccrual(cb) {
+  const fields = [document.getElementById('f-mileage'), document.getElementById('f-available')];
+  if (cb.checked) {
+    fields.forEach(el => { el.type = 'text'; el.value = '-'; el.readOnly = true; el.dataset.lastAuto = '-'; });
+  } else {
+    fields.forEach(el => { el.type = 'number'; el.value = ''; el.readOnly = false; delete el.dataset.lastAuto; });
   }
 }
 
@@ -3399,10 +3423,15 @@ async function submitBulkEdit() {
     if (val !== '') changes[key] = val;
   });
   // 숫자 필드는 별도 처리 (빈칸 = 변경 안 함)
+  const noAccrual    = document.getElementById('f-no-accrual')?.checked;
   const mileageVal   = document.getElementById('f-mileage').value;
   const availableVal = document.getElementById('f-available').value;
-  if (mileageVal   !== '') changes.mileage   = parseFloat(mileageVal);
-  if (availableVal !== '') changes.available = parseFloat(availableVal);
+  if (noAccrual) {
+    changes.mileage = '-'; changes.available = '-';
+  } else {
+    if (mileageVal   !== '') changes.mileage   = parseFloat(mileageVal);
+    if (availableVal !== '') changes.available = parseFloat(availableVal);
+  }
 
   if (Object.keys(changes).length === 0) {
     showToast('변경할 항목을 하나 이상 입력해주세요', true);
@@ -3482,8 +3511,8 @@ async function submitForm() {
     depart_date:depart, arrive_date:document.getElementById('f-arrive').value,
     country:document.getElementById('f-country').value.trim(), city:document.getElementById('f-city').value.trim(),
     trip_title:tripTitle, trip_doc_no:document.getElementById('f-trip-doc').value.trim(),
-    airline, mileage:parseFloat(mileage),
-    available: availableVal !== '' ? parseFloat(availableVal) : parseFloat(mileage),
+    airline, mileage: document.getElementById('f-no-accrual')?.checked ? '-' : parseFloat(mileage),
+    available: document.getElementById('f-no-accrual')?.checked ? '-' : (availableVal !== '' ? parseFloat(availableVal) : parseFloat(mileage)),
     flight_no:document.getElementById('f-flight-no').value.trim(),
     expire_date:expire,
     result_title:document.getElementById('f-result-title').value.trim(),
@@ -3528,8 +3557,8 @@ async function submitNewMultiTraveler() {
     depart_date:depart, arrive_date:document.getElementById('f-arrive').value,
     country:document.getElementById('f-country').value.trim(), city:document.getElementById('f-city').value.trim(),
     trip_title:tripTitle, trip_doc_no:document.getElementById('f-trip-doc').value.trim(),
-    airline, mileage:parseFloat(mileage)||0,
-    available: availableVal !== '' ? parseFloat(availableVal) : (parseFloat(mileage)||0),
+    airline, mileage: document.getElementById('f-no-accrual')?.checked ? '-' : (parseFloat(mileage)||0),
+    available: document.getElementById('f-no-accrual')?.checked ? '-' : (availableVal !== '' ? parseFloat(availableVal) : (parseFloat(mileage)||0)),
     flight_no:document.getElementById('f-flight-no').value.trim(),
     expire_date:expire,
     result_title:document.getElementById('f-result-title').value.trim(),
