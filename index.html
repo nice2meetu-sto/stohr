@@ -1012,7 +1012,7 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;font-f
     </div>
     <div class="form-body">
       <div style="font-size:13px;color:var(--text-sub);margin-bottom:14px">
-        <strong id="up-traveler-label" style="color:var(--text-main)"></strong>님의 마일리지 사용시 차감 내역을 확인할 수 있어요. <br><strong>조회 용으로, 실제로 저장되지 않습니다.</strong>
+        <strong id="up-traveler-label" style="color:var(--text-main)"></strong>님의 마일리지 사용시 차감 내역을 확인해보세요. <br><strong>조회용으로, 실제로 저장되지 않습니다.</strong>
       </div>
       <div class="form-grid">
         <div class="form-group full">
@@ -1748,9 +1748,9 @@ function renderUserSummary(rows) {
 
   document.getElementById('user-summary').innerHTML = html || '<div class="empty-state"><p>유효 마일리지가 없습니다</p></div>';
 
-  // 기준일 표시
+  // 조회일 표시
   const today = getKSTToday();
-  document.getElementById('today-date-label').textContent = `기준일 ${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+  document.getElementById('today-date-label').textContent = `조회일 ${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
 }
 
 // 소멸 예정 카드 클릭 → 해당 기간 내역만 표시
