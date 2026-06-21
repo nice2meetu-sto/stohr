@@ -700,8 +700,8 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;font-f
               <table class="data-table">
                 <thead><tr>
                   <th><input type="checkbox" id="db-check-all" onchange="toggleAllCheckboxes(this)"></th>
-                  <th>ID</th><th>출장자</th><th style="width:90px">소속팀</th><th style="width:90px">출발일</th><th style="min-width:170px">출장명</th>
-                  <th>항공사</th><th>적립/사용</th><th>잔여</th><th>유효기간</th><th>유효여부</th><th>구분</th><th>출처</th><th>비고</th><th>관리</th>
+                  <th style="width:48px">ID</th><th>출장자</th><th style="width:120px">소속팀</th><th style="width:90px">출발일</th><th style="min-width:170px">출장명</th>
+                  <th>항공사</th><th>적립/사용</th><th>잔여</th><th style="width:90px">유효기간</th><th>유효여부</th><th>구분</th><th>출처</th><th>비고</th><th>관리</th>
                 </tr></thead>
                 <tbody id="db-table-body"></tbody>
               </table>
@@ -2498,9 +2498,9 @@ function renderDbTable() {
     const checked = checkedIds.has(r.id) ? 'checked' : '';
     html+=`<tr class="${getRowBgClass(r)}">
       <td><input type="checkbox" class="db-row-check" data-id="${r.id}" data-mile="${r.mileage}" ${checked} onchange="onRowCheck(this)"></td>
-      <td class="nowrap" style="color:var(--text-hint);font-size:11px">${r.id}</td>
+      <td class="nowrap" style="color:var(--text-hint);font-size:11px;max-width:48px;overflow:hidden;text-overflow:ellipsis">${r.id}</td>
       <td class="nowrap fw-bold">${r.traveler}</td>
-      <td class="nowrap" style="color:var(--text-sub);max-width:90px;overflow:hidden;text-overflow:ellipsis" title="${r.team||r.dept||''}">${r.team||r.dept||'-'}</td>
+      <td class="nowrap" style="color:var(--text-sub);max-width:120px;overflow:hidden;text-overflow:ellipsis" title="${r.team||r.dept||''}">${r.team||r.dept||'-'}</td>
       <td class="nowrap">${fmt(r.depart_date)}</td>
       <td style="max-width:200px;min-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${r.trip_title}">${r.trip_title||'-'}</td>
       <td class="nowrap">${r.airline||'-'}</td>
