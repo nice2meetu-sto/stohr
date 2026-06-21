@@ -449,7 +449,7 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;font-f
                 <table class="data-table">
                   <thead><tr>
                     <th>#</th><th>출장자</th><th>출발일</th><th>출장명</th>
-                    <th>항공사</th><th>적립/사용</th><th>잔여</th><th>유효기간</th><th>유효여부</th><th>구분</th><th>출처</th><th>비고</th>
+                    <th>항공사</th><th>적립/사용</th><th>잔여</th><th>유효기간</th><th>유효여부</th><th>구분</th><th>출처</th>
                   </tr></thead>
                   <tbody id="overview-table-body"></tbody>
                 </table>
@@ -578,7 +578,7 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;font-f
                 </div>
                 <div class="table-scroll">
                   <table class="data-table">
-                    <thead><tr><th>#</th><th>출발일</th><th>출장명</th><th>항공사</th><th>적립/사용</th><th>잔여</th><th>유효기간</th><th>유효여부</th><th>구분</th><th>출처</th></tr></thead>
+                    <thead><tr><th>#</th><th>출발일</th><th>출장명</th><th>항공사</th><th>적립/사용</th><th>잔여</th><th>유효기간</th><th>유효여부</th><th>구분</th><th>출처</th><th>상태</th></tr></thead>
                     <tbody id="admin-personal-body"></tbody>
                   </table>
                 </div>
@@ -700,7 +700,7 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;font-f
               <table class="data-table">
                 <thead><tr>
                   <th><input type="checkbox" id="db-check-all" onchange="toggleAllCheckboxes(this)"></th>
-                  <th>ID</th><th>출장자</th><th>소속팀</th><th>출발일</th><th>출장명</th>
+                  <th>ID</th><th>출장자</th><th style="width:62px">소속팀</th><th style="width:90px">출발일</th><th style="min-width:200px">출장명</th>
                   <th>항공사</th><th>적립/사용</th><th>잔여</th><th>유효기간</th><th>유효여부</th><th>구분</th><th>출처</th><th>비고</th><th>관리</th>
                 </tr></thead>
                 <tbody id="db-table-body"></tbody>
@@ -1986,7 +1986,7 @@ function renderOverviewPage() {
   const rows = ovFiltered.slice((ovPage-1)*PER_PAGE, ovPage*PER_PAGE);
 
   if (rows.length === 0) {
-    document.getElementById('overview-table-body').innerHTML = `<tr><td colspan="12" class="empty-state"><p>데이터가 없습니다</p></td></tr>`;
+    document.getElementById('overview-table-body').innerHTML = `<tr><td colspan="11" class="empty-state"><p>데이터가 없습니다</p></td></tr>`;
     document.getElementById('overview-pagination').innerHTML = '';
     return;
   }
@@ -2007,7 +2007,6 @@ function renderOverviewPage() {
       <td style="font-size:11px">${r.is_valid_raw||'-'}</td>
       <td style="font-size:11px">${r.category_raw||'-'}</td>
       <td><span class="${sc}">${r.source}</span></td>
-      <td style="color:var(--text-sub);font-size:11px">${r.memo||''}</td>
     </tr>`;
   });
   document.getElementById('overview-table-body').innerHTML = html;
@@ -2391,7 +2390,7 @@ function renderPersonalDetailTable() {
   });
 
   if (!filtered.length) {
-    document.getElementById('admin-personal-body').innerHTML = `<tr><td colspan="10" class="empty-state"><p>조건에 맞는 내역이 없습니다</p></td></tr>`;
+    document.getElementById('admin-personal-body').innerHTML = `<tr><td colspan="11" class="empty-state"><p>조건에 맞는 내역이 없습니다</p></td></tr>`;
     return;
   }
   let html='';
@@ -2407,6 +2406,7 @@ function renderPersonalDetailTable() {
       <td style="font-size:11px">${r.is_valid_raw||'-'}</td>
       <td style="font-size:11px">${r.category_raw||'-'}</td>
       <td><span class="${r.source==='재단'?'src-badge':'src-badge src-corp'}">${r.source}</span></td>
+      <td style="font-size:11px">${r.status||'-'}</td>
     </tr>`;
   });
   document.getElementById('admin-personal-body').innerHTML = html;
@@ -2500,9 +2500,9 @@ function renderDbTable() {
       <td><input type="checkbox" class="db-row-check" data-id="${r.id}" data-mile="${r.mileage}" ${checked} onchange="onRowCheck(this)"></td>
       <td class="nowrap" style="color:var(--text-hint);font-size:11px">${r.id}</td>
       <td class="nowrap fw-bold">${r.traveler}</td>
-      <td class="nowrap" style="color:var(--text-sub)" title="${r.team||r.dept||''}">${r.team||r.dept||'-'}</td>
+      <td class="nowrap" style="color:var(--text-sub);max-width:62px;overflow:hidden;text-overflow:ellipsis" title="${r.team||r.dept||''}">${r.team||r.dept||'-'}</td>
       <td class="nowrap">${fmt(r.depart_date)}</td>
-      <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${r.trip_title}">${r.trip_title||'-'}</td>
+      <td style="max-width:240px;min-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${r.trip_title}">${r.trip_title||'-'}</td>
       <td class="nowrap">${r.airline||'-'}</td>
       <td class="nowrap ${mc}">${fmtMileage(r)}</td>
       <td class="nowrap" style="color:#0A57CC;font-weight:700">${fmtAvailable(r)}</td>
