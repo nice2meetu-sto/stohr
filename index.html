@@ -658,6 +658,12 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;font-f
                   </div>
                 </div>
                 <div style="display:flex;flex-direction:column;gap:3px">
+                  <span style="font-size:10px;color:var(--text-hint);font-weight:700">확인필요</span>
+                  <div style="display:flex;gap:4px;flex-wrap:wrap">
+                    <label class="db-chip"><input type="checkbox" id="db-filter-needcheck" data-group="needcheck" onchange="applyDbFilters()"> 확인필요</label>
+                  </div>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:3px">
                   <span style="font-size:10px;color:var(--text-hint);font-weight:700">정렬</span>
                   <div style="display:flex;gap:4px">
                     <select id="db-sort-field" onchange="applyDbFilters()" style="padding:5px 8px;border:1.5px solid var(--border);border-radius:6px;font-size:11px;outline:none">
@@ -2423,6 +2429,7 @@ function applyDbFilters() {
   const validChecks  = [...document.querySelectorAll('#tab-database input[data-group="valid"]:checked')].map(el=>el.value);
   const catChecks    = [...document.querySelectorAll('#tab-database input[data-group="category"]:checked')].map(el=>el.value);
   const sourceChecks = [...document.querySelectorAll('#tab-database input[data-group="source"]:checked')].map(el=>el.value);
+  const needCheck    = document.getElementById('db-filter-needcheck')?.checked;
 
   dbFiltered = allData.filter(r => {
     if (airline    && !(r.airline||'').toLowerCase().includes(airline)) return false;
@@ -2436,6 +2443,7 @@ function applyDbFilters() {
     if (validChecks.length  && !validChecks.includes(r.is_valid_raw)) return false;
     if (sourceChecks.length && !sourceChecks.includes(r.source)) return false;
     if (catChecks.length    && !catChecks.includes(r.category_raw)) return false;
+    if (needCheck && !(r.is_valid_raw === '확인' || r.category_raw === '확인')) return false;
     return true;
   });
   const dbSortField = document.getElementById('db-sort-field')?.value || 'depart';
