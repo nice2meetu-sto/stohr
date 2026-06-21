@@ -3891,7 +3891,8 @@ function showToast(msg,isError){
 
 // 초기 실행
 (async()=>{
-  await loadData();
+  // 마일리지(getAll)와 출장(getTrips) 데이터를 병렬로 불러와 초기 로딩 시간 단축
+  await Promise.all([loadData(), loadTrips()]);
   switchAdminTab('dashboard');
   renderAdminDashboard();
 })();
