@@ -2120,7 +2120,7 @@ function showAirlineDetail(airline) {
   document.getElementById('airline-detail-view').style.display = '';
   document.getElementById('airline-detail-title').textContent = `✈ ${airline} 적립 내역`;
 
-  const rows = allData.filter(r => r.airline === airline).sort((a,b)=>(b.depart_date||'').localeCompare(a.depart_date||''));
+  const rows = allData.filter(r => r.airline === airline && isCalcSource(r) && isValidRow(r) && r.category_raw === '적립').sort((a,b)=>(b.depart_date||'').localeCompare(a.depart_date||''));
   let html = '';
   rows.forEach((r,i) => {
     const mc = r.mileage<0?'mileage-use':'mileage-earn';
