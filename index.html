@@ -578,7 +578,7 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;font-f
                 </div>
                 <div class="table-scroll">
                   <table class="data-table">
-                    <thead><tr><th>#</th><th>출발일</th><th>출장명</th><th>항공사</th><th>적립/사용</th><th>잔여</th><th>유효기간</th><th>유효여부</th><th>구분</th><th>출처</th><th>상태</th></tr></thead>
+                    <thead><tr><th style="width:70px;text-align:center">#</th><th style="width:120px;text-align:center">출발일</th><th>출장명</th><th style="width:140px;text-align:center">항공사</th><th style="text-align:right">적립/사용</th><th style="text-align:right">잔여</th><th style="width:140px;text-align:center">유효기간</th><th style="text-align:center">유효여부</th><th style="text-align:center">구분</th><th style="text-align:center">출처</th><th style="text-align:center">상태</th></tr></thead>
                     <tbody id="admin-personal-body"></tbody>
                   </table>
                 </div>
@@ -2397,16 +2397,16 @@ function renderPersonalDetailTable() {
   filtered.forEach((r,i)=>{
     const mc=r.mileage<0?'mileage-use':'mileage-earn';
     html+=`<tr class="${getRowBgClass(r)}">
-      <td>${i+1}</td><td class="nowrap">${fmt(r.depart_date)}</td>
-      <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${r.trip_title||''}">${r.trip_title||'-'}</td>
-      <td class="nowrap">${r.airline||'-'}</td>
-      <td class="nowrap ${mc}">${fmtMileage(r)}</td>
-      <td class="nowrap" style="color:#0A57CC;font-weight:700">${fmtAvailable(r)}</td>
-      <td class="nowrap">${fmt(r.expire_date)}</td>
-      <td style="font-size:11px">${r.is_valid_raw||'-'}</td>
-      <td style="font-size:11px">${r.category_raw||'-'}</td>
-      <td><span class="${r.source==='재단'?'src-badge':'src-badge src-corp'}">${r.source}</span></td>
-      <td style="font-size:11px">${r.status||'-'}</td>
+      <td style="text-align:center">${i+1}</td><td class="nowrap" style="text-align:center">${fmt(r.depart_date)}</td>
+      <td style="max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${r.trip_title||''}">${r.trip_title||'-'}</td>
+      <td class="nowrap" style="max-width:140px;overflow:hidden;text-overflow:ellipsis;text-align:center" title="${r.airline||''}">${r.airline||'-'}</td>
+      <td class="nowrap ${mc}" style="text-align:right">${fmtMileage(r)}</td>
+      <td class="nowrap" style="color:#0A57CC;font-weight:700;text-align:right">${fmtAvailable(r)}</td>
+      <td class="nowrap" style="text-align:center">${fmt(r.expire_date)}</td>
+      <td style="font-size:11px;text-align:center">${r.is_valid_raw||'-'}</td>
+      <td style="font-size:11px;text-align:center">${r.category_raw||'-'}</td>
+      <td style="text-align:center"><span class="${r.source==='재단'?'src-badge':'src-badge src-corp'}">${r.source}</span></td>
+      <td style="font-size:11px;text-align:center">${r.status||'-'}</td>
     </tr>`;
   });
   document.getElementById('admin-personal-body').innerHTML = html;
