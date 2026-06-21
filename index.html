@@ -72,8 +72,6 @@ input,select,textarea{font-family:inherit;font-size:14px}
 .data-table td{padding:9px 12px;font-size:12px;color:var(--text-main);border-bottom:1px solid #f0f1f5;vertical-align:middle}
 .data-table tr:last-child td{border-bottom:none}
 .data-table tbody tr:hover td{background:rgba(52,59,104,.06)}
-.data-table tr.row-void td{color:var(--invalid);text-decoration:line-through}
-.data-table tr.row-void .status-badge{text-decoration:none}
 .mileage-earn{font-weight:700;color:var(--main)}
 .mileage-use{font-weight:700;color:var(--use-color)}
 .mileage-none{color:var(--text-hint)}
@@ -1066,14 +1064,11 @@ let currentUserAirlineFilter = ''; // 항공사 카드 클릭 필터
 // - 잔여(available)가 0 이거나 유효여부가 무효 → 옅은 회색
 // 음수가 우선순위 높음
 // =====================================================
+// 행 배경색 (모든 탭 공통)
+// 우선순위: 사용(음수) > 잔액0·무효·불용(회색) > 유효기간 임박(강조색) > 기본
 function getRowBgClass(r) {
   if (r.mileage < 0) return 'row-negative';
   if (r.available === 0 || r.is_valid_raw === '무효' || r.category_raw === '불용') return 'row-zero-or-invalid';
-  return '';
-}
-
-// 전체현황 전용: 소멸 예정 알림 배너와 동일한 색상으로 행 강조 (음수/무효보다 우선)
-function getOverviewRowBgClass(r) {
   if (isValidRow(r)) {
     const d = getDaysLeft(r.expire_date);
     if (d !== null && d >= 0) {
@@ -1082,7 +1077,7 @@ function getOverviewRowBgClass(r) {
       if (d <= 180) return 'row-exp90';
     }
   }
-  return getRowBgClass(r);
+  return '';
 }
 
 // =====================================================
@@ -1155,12 +1150,6 @@ function getStatusBadge(row) {
   if (d <= 60) return `<span class="status-badge st-warn60">만료임박 D-${d}</span>`;
   if (d <= 90) return `<span class="status-badge st-warn90">만료임박 D-${d}</span>`;
   return '<span class="status-badge st-valid">유효</span>';
-}
-function isVoidRow(row) {
-  if (row.category === 'use' || row.mileage < 0) return false;
-  if (row.is_valid === 'invalid') return false;
-  const d = getDaysLeft(row.expire_date);
-  return d !== null && d < 0;
 }
 
 // =====================================================
@@ -1823,7 +1812,7 @@ function renderUserTable() {
   filtered.forEach((r, i) => {
     const mc = (r.category_raw==='사용'||r.mileage<0) ? 'mileage-use' : r.mileage > 0 ? 'mileage-earn' : 'mileage-none';
     const sc = r.source === '재단' ? 'src-badge' : 'src-badge src-corp';
-    html += `<tr class="${isVoidRow(r)?'row-void':getRowBgClass(r)}">
+    html += `<tr class="${getRowBgClass(r)}">
       <td>${i+1}</td>
       <td class="nowrap">${fmt(r.depart_date)}</td>
       <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${r.trip_title}">${r.trip_title||'-'}</td>
@@ -1994,7 +1983,7 @@ function renderOverviewPage() {
     const mc = r.mileage < 0 ? 'mileage-use' : 'mileage-earn';
     const sc = r.source === '재단' ? 'src-badge' : 'src-badge src-corp';
     const idx = (ovPage-1)*PER_PAGE + i + 1;
-    html += `<tr class="${isVoidRow(r)?'row-void':getOverviewRowBgClass(r)}">
+    html += `<tr class="${getRowBgClass(r)}">
       <td>${idx}</td>
       <td class="nowrap fw-bold">${r.traveler}</td>
       <td class="nowrap">${fmt(r.depart_date)}</td>
@@ -2124,7 +2113,7 @@ function showAirlineDetail(airline) {
   let html = '';
   rows.forEach((r,i) => {
     const mc = r.mileage<0?'mileage-use':'mileage-earn';
-    html += `<tr class="${isVoidRow(r)?'row-void':getRowBgClass(r)}">
+    html += `<tr class="${getRowBgClass(r)}">
       <td>${i+1}</td><td class="nowrap fw-bold">${r.traveler}</td>
       <td class="nowrap">${fmt(r.depart_date)}</td>
       <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${r.trip_title||''}">${r.trip_title||'-'}</td>
@@ -2396,7 +2385,7 @@ function renderPersonalDetailTable() {
   let html='';
   filtered.forEach((r,i)=>{
     const mc=r.mileage<0?'mileage-use':'mileage-earn';
-    html+=`<tr class="${isVoidRow(r)?'row-void':getRowBgClass(r)}">
+    html+=`<tr class="${getRowBgClass(r)}">
       <td>${i+1}</td><td class="nowrap">${fmt(r.depart_date)}</td>
       <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${r.trip_title||''}">${r.trip_title||'-'}</td>
       <td class="nowrap">${r.airline||'-'}</td>
@@ -2493,7 +2482,7 @@ function renderDbTable() {
       ?`<button class="btn-edit" onclick="openFormEdit('${r.id}')">수정</button><button class="btn-del" onclick="openDelModal('${r.id}','${r.traveler}')">삭제</button>`
       :`<span class="readonly-tag">읽기전용</span>`;
     const checked = checkedIds.has(r.id) ? 'checked' : '';
-    html+=`<tr class="${isVoidRow(r)?'row-void':getRowBgClass(r)}">
+    html+=`<tr class="${getRowBgClass(r)}">
       <td><input type="checkbox" class="db-row-check" data-id="${r.id}" data-mile="${r.mileage}" ${checked} onchange="onRowCheck(this)"></td>
       <td class="nowrap" style="color:var(--text-hint);font-size:11px">${r.id}</td>
       <td class="nowrap fw-bold">${r.traveler}</td>
