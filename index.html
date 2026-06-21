@@ -3443,6 +3443,7 @@ async function submitBulkEdit() {
   showLoading('일괄 수정 중...');
   try {
     let failCount = 0;
+    const errMsgs = [];
     for (const targetId of targets) {
       const row = allData.find(r => r.id === targetId);
       if (!row) continue;
@@ -3462,13 +3463,22 @@ async function submitBulkEdit() {
       };
 
       const url = `${APPS_SCRIPT_URL}?action=update&id=${encodeURIComponent(targetId)}&data=${encodeURIComponent(JSON.stringify(merged))}`;
-      const res  = await fetch(url);
-      const json = await res.json();
-      if (!json.success) failCount++;
+      try {
+        const res  = await fetch(url);
+        const json = await res.json();
+        if (!json.success) { failCount++; errMsgs.push(`${targetId}: ${json.error || '알 수 없는 오류'}`); }
+      } catch (err) {
+        failCount++; errMsgs.push(`${targetId}: ${err.message}`);
+      }
     }
 
     closeForm();
-    showToast(failCount > 0 ? `일부 실패 (${failCount}건)` : `${targets.length}건 일괄 수정 완료`);
+    if (failCount > 0) {
+      console.error('일괄 수정 실패 상세:\n' + errMsgs.join('\n'));
+      showToast(`일부 실패 (${failCount}건) — ${errMsgs[0]}`, true);
+    } else {
+      showToast(`${targets.length}건 일괄 수정 완료`);
+    }
     clearCheckboxes();
     await loadData();
     if (currentTab === 'database') applyDbFilters();
