@@ -2334,14 +2334,15 @@ function resetPersonalDetailFilters(skipRender) {
 // 소멸예정 박스 클릭 → 해당 기간 이내 전체 내역으로 필터(누적, 사용자모드와 동일 동작)
 function filterPersonalByAirline(airline) {
   currentPersonalExpireDaysFilter = null;
+  const af = document.getElementById('p-filter-airline');
+  const isSame = af && af.value === airline;   // 같은 항공사 박스 재클릭 → 해제
   ['p-filter-status','p-filter-category','p-filter-trip'].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = '';
   });
   ['p-filter-from','p-filter-to','p-filter-expire-from','p-filter-expire-to'].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = '';
   });
-  const af = document.getElementById('p-filter-airline');
-  if (af) af.value = airline;
+  if (af) af.value = isSame ? '' : airline;
   renderPersonalDetailTable();
 }
 
