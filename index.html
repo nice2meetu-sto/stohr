@@ -2493,7 +2493,7 @@ function renderDbTable() {
       ?`<button class="btn-edit" onclick="openFormEdit('${r.id}')">수정</button><button class="btn-del" onclick="openDelModal('${r.id}','${r.traveler}')">삭제</button>`
       :`<span class="readonly-tag">읽기전용</span>`;
     const checked = checkedIds.has(r.id) ? 'checked' : '';
-    html+=`<tr class="${isVoidRow(r)?'row-void':getRowBgClass(r)}">
+    html+=`<tr class="${r.category_raw==='불용'?'row-zero-or-invalid':(isVoidRow(r)?'row-void':getRowBgClass(r))}">
       <td><input type="checkbox" class="db-row-check" data-id="${r.id}" data-mile="${r.mileage}" ${checked} onchange="onRowCheck(this)"></td>
       <td class="nowrap" style="color:var(--text-hint);font-size:11px">${r.id}</td>
       <td class="nowrap fw-bold">${r.traveler}</td>
