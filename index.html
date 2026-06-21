@@ -701,7 +701,7 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;font-f
                 <thead><tr>
                   <th style="width:28px"><input type="checkbox" id="db-check-all" onchange="toggleAllCheckboxes(this)"></th>
                   <th style="width:66px">ID</th><th style="width:76px">출장자</th><th style="width:120px">소속팀</th><th style="width:90px">출발일</th><th style="min-width:170px">출장명</th>
-                  <th style="width:66px">항공사</th><th>적립/사용</th><th>잔여</th><th style="width:90px">유효기간</th><th>유효여부</th><th>구분</th><th>출처</th><th>비고</th><th>관리</th>
+                  <th style="width:120px">항공사</th><th style="text-align:right">적립/사용</th><th style="text-align:right">잔여</th><th style="width:90px">유효기간</th><th style="width:40px;text-align:center">유효여부</th><th style="width:40px;text-align:center">구분</th><th style="width:35px">출처</th><th>비고</th><th>관리</th>
                 </tr></thead>
                 <tbody id="db-table-body"></tbody>
               </table>
@@ -2503,13 +2503,13 @@ function renderDbTable() {
       <td class="nowrap" style="color:var(--text-sub);max-width:120px;overflow:hidden;text-overflow:ellipsis" title="${r.team||r.dept||''}">${r.team||r.dept||'-'}</td>
       <td class="nowrap">${fmt(r.depart_date)}</td>
       <td style="max-width:200px;min-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${r.trip_title}">${r.trip_title||'-'}</td>
-      <td class="nowrap" style="max-width:66px;overflow:hidden;text-overflow:ellipsis" title="${r.airline||''}">${r.airline||'-'}</td>
-      <td class="nowrap ${mc}">${fmtMileage(r)}</td>
-      <td class="nowrap" style="color:#0A57CC;font-weight:700">${fmtAvailable(r)}</td>
+      <td class="nowrap" style="max-width:120px;overflow:hidden;text-overflow:ellipsis" title="${r.airline||''}">${r.airline||'-'}</td>
+      <td class="nowrap ${mc}" style="text-align:right">${fmtMileage(r)}</td>
+      <td class="nowrap" style="color:#0A57CC;font-weight:700;text-align:right">${fmtAvailable(r)}</td>
       <td class="nowrap">${fmt(r.expire_date)}</td>
-      <td style="font-size:11px">${r.is_valid_raw||'-'}</td>
-      <td style="font-size:11px">${r.category_raw||'-'}</td>
-      <td><span class="${r.source==='재단'?'src-badge':'src-badge src-corp'}">${r.source}</span></td>
+      <td style="font-size:11px;text-align:center">${r.is_valid_raw||'-'}</td>
+      <td style="font-size:11px;text-align:center">${r.category_raw||'-'}</td>
+      <td style="text-align:center"><span class="${r.source==='재단'?'src-badge':'src-badge src-corp'}">${r.source}</span></td>
       <td style="color:var(--text-sub);font-size:11px;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${r.memo||''}">${r.memo||''}</td>
       <td class="nowrap">${acts}</td>
     </tr>`;
