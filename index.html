@@ -481,7 +481,7 @@ body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;font-f
               <div class="table-section" style="margin-bottom:0">
                 <div class="table-scroll">
                   <table class="data-table">
-                    <thead><tr><th>#</th><th>출장자</th><th>출발일</th><th>출장명</th><th>적립/사용</th><th>잔여</th><th>유효기간</th><th>유효여부</th><th>구분</th><th>출처</th></tr></thead>
+                    <thead><tr><th style="width:70px;text-align:center">#</th><th style="text-align:center">출장자</th><th style="width:120px;text-align:center">출발일</th><th>출장명</th><th style="text-align:right">적립/사용</th><th style="text-align:right">잔여</th><th style="width:140px;text-align:center">유효기간</th><th style="text-align:center">유효여부</th><th style="text-align:center">구분</th><th style="text-align:center">출처</th></tr></thead>
                     <tbody id="airline-detail-body"></tbody>
                   </table>
                 </div>
@@ -2125,15 +2125,15 @@ function showAirlineDetail(airline) {
   rows.forEach((r,i) => {
     const mc = r.mileage<0?'mileage-use':'mileage-earn';
     html += `<tr class="${getRowBgClass(r)}">
-      <td>${i+1}</td><td class="nowrap fw-bold">${r.traveler}</td>
-      <td class="nowrap">${fmt(r.depart_date)}</td>
-      <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${r.trip_title||''}">${r.trip_title||'-'}</td>
-      <td class="nowrap ${mc}">${fmtMileage(r)}</td>
-      <td class="nowrap" style="color:#0A57CC;font-weight:700">${fmtAvailable(r)}</td>
-      <td class="nowrap">${fmt(r.expire_date)}</td>
-      <td>${r.is_valid_raw||'-'}</td>
-      <td>${r.category_raw||'-'}</td>
-      <td><span class="${r.source==='재단'?'src-badge':'src-badge src-corp'}">${r.source}</span></td>
+      <td style="text-align:center">${i+1}</td><td class="nowrap fw-bold" style="text-align:center">${r.traveler}</td>
+      <td class="nowrap" style="text-align:center">${fmt(r.depart_date)}</td>
+      <td style="max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${r.trip_title||''}">${r.trip_title||'-'}</td>
+      <td class="nowrap ${mc}" style="text-align:right">${fmtMileage(r)}</td>
+      <td class="nowrap" style="color:#0A57CC;font-weight:700;text-align:right">${fmtAvailable(r)}</td>
+      <td class="nowrap" style="text-align:center">${fmt(r.expire_date)}</td>
+      <td style="text-align:center">${r.is_valid_raw||'-'}</td>
+      <td style="text-align:center">${r.category_raw||'-'}</td>
+      <td style="text-align:center"><span class="${r.source==='재단'?'src-badge':'src-badge src-corp'}">${r.source}</span></td>
     </tr>`;
   });
   document.getElementById('airline-detail-body').innerHTML = html || `<tr><td colspan="8" class="empty-state"><p>내역이 없습니다</p></td></tr>`;
@@ -2347,7 +2347,7 @@ function filterPersonalByAirline(airline) {
 }
 
 function filterPersonalByExpireDays(days) {
-  currentPersonalExpireDaysFilter = days;
+  currentPersonalExpireDaysFilter = (currentPersonalExpireDaysFilter === days) ? null : days;   // 같은 박스 재클릭 → 해제
   ['p-filter-status','p-filter-category','p-filter-airline','p-filter-trip'].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = '';
   });
