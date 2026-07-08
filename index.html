@@ -1187,27 +1187,37 @@ function getStatusBadge(row) {
 // =====================================================
 // 데이터 로드
 // =====================================================
-async function loadData() {
-  showLoading('데이터를 불러오는 중...');
+// ── 로컬 캐시 (재방문 즉시 표시용) ──────────────────────────────
+const CACHE_KEY_DATA  = 'sto_mileage_data_v1';
+const CACHE_KEY_TRIPS = 'sto_mileage_trips_v1';
+function cacheGet(key){ try{ const s=localStorage.getItem(key); return s?JSON.parse(s):null; }catch(e){ return null; } }
+function cacheSet(key,val){ try{ localStorage.setItem(key, JSON.stringify(val)); }catch(e){ /* 용량 초과 등은 무시 */ } }
+
+// allData 기반 파생값(출장자/항공사 목록, 폼 자동완성) 재계산
+function rebuildDerived(){
+  const tSet = {}, aSet = {};
+  allData.forEach(r => {
+    if (r.traveler) tSet[r.traveler] = true;
+    if (r.airline && r.airline !== '-')  aSet[r.airline]  = true;
+  });
+  travelers = Object.keys(tSet).sort((a,b) => a.localeCompare(b,'ko'));
+  airlines  = Object.keys(aSet).sort((a,b) => a.localeCompare(b,'ko'));
+  populateDropdowns();
+}
+
+async function loadData(silent) {
+  if (!silent) showLoading('데이터를 불러오는 중...');
   try {
     const res  = await fetch(`${APPS_SCRIPT_URL}?action=getAll`);
     const json = await res.json();
     if (!json.success) throw new Error(json.error || '데이터 로드 실패');
     allData = json.data;
-
-    const tSet = {}, aSet = {};
-    allData.forEach(r => {
-      if (r.traveler) tSet[r.traveler] = true;
-      if (r.airline && r.airline !== '-')  aSet[r.airline]  = true;
-    });
-    travelers = Object.keys(tSet).sort((a,b) => a.localeCompare(b,'ko'));
-    airlines  = Object.keys(aSet).sort((a,b) => a.localeCompare(b,'ko'));
-
-    populateDropdowns();
+    cacheSet(CACHE_KEY_DATA, allData);
+    rebuildDerived();
   } catch(e) {
-    showToast('데이터 로드 실패: ' + e.message, true);
+    if (!silent) showToast('데이터 로드 실패: ' + e.message, true);
   } finally {
-    hideLoading();
+    if (!silent) hideLoading();
   }
 }
 
@@ -2604,18 +2614,19 @@ let tripDeleteTargetId = null;
 // =====================================================
 // 국외출장 DB — 데이터 로드
 // =====================================================
-async function loadTrips() {
-  showLoading('국외출장 데이터를 불러오는 중...');
+async function loadTrips(silent) {
+  if (!silent) showLoading('국외출장 데이터를 불러오는 중...');
   try {
     const res  = await fetch(`${APPS_SCRIPT_URL}?action=getTrips`);
     const json = await res.json();
     if (!json.success) throw new Error(json.error || '국외출장 데이터 로드 실패');
     allTrips = json.data;
+    cacheSet(CACHE_KEY_TRIPS, allTrips);
     applyTripFilters();
   } catch(e) {
-    showToast('국외출장 데이터 로드 실패: ' + e.message, true);
+    if (!silent) showToast('국외출장 데이터 로드 실패: ' + e.message, true);
   } finally {
-    hideLoading();
+    if (!silent) hideLoading();
   }
 }
 
@@ -3956,10 +3967,27 @@ function showToast(msg,isError){
 
 // 초기 실행
 (async()=>{
-  // 마일리지(getAll)와 출장(getTrips) 데이터를 병렬로 불러와 초기 로딩 시간 단축
-  await Promise.all([loadData(), loadTrips()]);
-  switchAdminTab('dashboard');
-  renderAdminDashboard();
+  const cachedData  = cacheGet(CACHE_KEY_DATA);
+  const cachedTrips = cacheGet(CACHE_KEY_TRIPS);
+
+  if (cachedData && cachedData.length && cachedTrips && cachedTrips.length) {
+    // 재방문: 캐시된 데이터를 즉시 표시(체감 로딩 0초) 후, 뒤에서 조용히 최신화
+    allData  = cachedData;
+    allTrips = cachedTrips;
+    rebuildDerived();
+    switchAdminTab('dashboard');
+    renderAdminDashboard();
+    Promise.all([loadData(true), loadTrips(true)]).then(() => {
+      renderAdminDashboard();
+      const nm = document.getElementById('user-search-input');
+      if (nm && nm.value.trim()) doUserSearch();   // 검색 중이었으면 최신값으로 갱신
+    });
+  } else {
+    // 첫 방문(캐시 없음): 마일리지·출장 데이터를 병렬로 로드
+    await Promise.all([loadData(), loadTrips()]);
+    switchAdminTab('dashboard');
+    renderAdminDashboard();
+  }
 })();
 </script>
 </body>
