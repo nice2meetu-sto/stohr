@@ -242,11 +242,8 @@ td
 .toast.error{background:var(--warn30)}
 .nowrap{white-space:nowrap}
 .row-negative{background:rgba(163,45,45,.07)}
-.row-zero-or-invalid{background:rgba(136,135,128,.08)}   /* 기타 무효/잔액0 : 연한 회색 */
-.row-none-dark{background:rgba(110,109,102,.20)}         /* 미적립 : 진한 회색 */
 .row-void{background:rgba(136,135,128,.08)}              /* 불용 : 연한 회색 */
-.row-invalidzero{background:rgba(163,45,45,.07)}         /* 무효+잔액0 : 연한 빨강 */
-.data-table tr.row-void td,.data-table tr.row-invalidzero td{color:var(--text-hint)!important}  /* 불용·무효잔액0 : 글씨 연하게 */
+.data-table tr.row-muted td{color:var(--text-hint)!important}  /* 무효·미적립 : 글씨 연하게 */
 .row-exp30{background:var(--warn30-bg)}
 .row-exp60{background:var(--warn60-bg)}
 .row-exp90{background:#FDF8EC}
@@ -1124,21 +1121,23 @@ let currentUserAirlineFilter = ''; // 항공사 카드 클릭 필터
 // 행 배경색 (모든 탭 공통)
 // 우선순위: 사용(음수) > 잔액0·무효·불용(회색) > 유효기간 임박(강조색) > 기본
 function getRowBgClass(r) {
-  if (r.mileage < 0) return 'row-negative';                                          // 1) 음수 → 연한 빨강
-  if (r.category_raw === '사용') return 'row-negative';                              // 2) 사용 → 연한 빨강
-  if (r.category_raw === '불용') return 'row-void';                                  // 3) 불용 → 연한 회색 + 글씨 연하게
-  if (r.is_valid_raw === '미적립' || r.category_raw === '미적립') return 'row-none-dark'; // 4) 미적립 → 진한 회색
-  if (r.is_valid_raw === '무효' && r.available === 0) return 'row-invalidzero';       // 5) 무효+잔액0 → 연한 빨강 + 글씨 연하게
-  if (r.is_valid_raw === '무효' || r.available === 0) return 'row-zero-or-invalid';   // 6) 그 외 무효/잔액0 → 연한 회색
-  if (isValidRow(r)) {
+  // ── 배경색: 구분(음수/사용/불용/미적립) 기준 ──
+  let bg = '';
+  if (r.mileage < 0 || r.category_raw === '사용') bg = 'row-negative';               // 음수·사용 → 연한 빨강
+  else if (r.category_raw === '불용') bg = 'row-void';                               // 불용 → 연한 회색
+  else if (r.category_raw === '미적립' || r.is_valid_raw === '미적립') bg = '';      // 미적립 → 흰색
+  else if (isValidRow(r)) {                                                          // 유효+적립 임박 → 유효기간 색
     const d = getDaysLeft(r.expire_date);
     if (d !== null && d >= 0) {
-      if (d <= 30)  return 'row-exp30';
-      if (d <= 90)  return 'row-exp60';
-      if (d <= 180) return 'row-exp90';
+      if (d <= 30)       bg = 'row-exp30';
+      else if (d <= 90)  bg = 'row-exp60';
+      else if (d <= 180) bg = 'row-exp90';
     }
   }
-  return '';
+  // ── 글씨 연하게: 무효 또는 미적립 (배경은 위 구분 그대로) ──
+  if (r.is_valid_raw === '무효' || r.is_valid_raw === '미적립' || r.category_raw === '미적립')
+    bg = (bg + ' row-muted').trim();
+  return bg;
 }
 
 // =====================================================
