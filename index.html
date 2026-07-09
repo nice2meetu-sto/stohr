@@ -1123,7 +1123,8 @@ let currentUserAirlineFilter = ''; // 항공사 카드 클릭 필터
 // 행 배경색 (모든 탭 공통)
 // 우선순위: 사용(음수) > 잔액0·무효·불용(회색) > 유효기간 임박(강조색) > 기본
 function getRowBgClass(r) {
-  if (r.category_raw === '사용') return 'row-use';                                   // 사용 → 연한 하늘색
+  if (r.mileage < 0) return 'row-negative';                                          // 음수(실제 차감) → 연한 빨강
+  if (r.category_raw === '사용') return 'row-use';                                   // 사용(잔액0 분류) → 연한 하늘색
   if (r.category_raw === '불용') return 'row-void';                                  // 불용 → 진한 회색
   if (r.is_valid_raw === '미적립' || r.category_raw === '미적립') return 'row-zero-or-invalid'; // 미적립 → 연한 회색(유지)
   if (r.is_valid_raw === '무효' && r.available === 0) return 'row-invalidzero';       // 무효+잔액0 → 톤다운 블루그레이
