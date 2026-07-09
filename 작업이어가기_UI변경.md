@@ -142,6 +142,63 @@ git pull origin claude/zealous-ptolemy-dye8z8
 
 ---
 
+## 7. 행 배경색 / 글씨색 규칙 (getRowBgClass) — ★최종
+
+**무엇**: 표의 각 행 배경색·글씨색을 정하는 **단일 함수 `getRowBgClass(r)`**. 모든 테이블이 공유.
+**설계**: **배경은 '구분(category)' 기준으로만** 정하고, **글씨 연하게는 '미적립'일 때만** 별도로 얹음(배경과 분리).
+
+**위치**: JS `function getRowBgClass(r)` / CSS는 `.row-negative`·`.row-void`·`.row-muted` 등
+**찾을 문자열**: `function getRowBgClass` , `.row-muted`
+
+**현재 로직**:
+```js
+function getRowBgClass(r) {
+  let bg = '';
+  if (r.mileage < 0 || r.category_raw === '사용') bg = 'row-negative';            // 음수·사용 → 연한 빨강
+  else if (r.category_raw === '불용')             bg = 'row-void';                // 불용 → 연한 회색
+  else if (r.category_raw === '미적립' || r.is_valid_raw === '미적립') bg = '';   // 미적립 → 흰색
+  else if (isValidRow(r)) {                                                       // 유효+적립 · 임박 → 유효기간 색
+    const d = getDaysLeft(r.expire_date);
+    if (d !== null && d >= 0) {
+      if (d <= 30)       bg = 'row-exp30';
+      else if (d <= 90)  bg = 'row-exp60';
+      else if (d <= 180) bg = 'row-exp90';
+    }
+  }
+  // 글씨 연하게: 미적립만 (무효는 기본 글씨색)
+  if (r.is_valid_raw === '미적립' || r.category_raw === '미적립')
+    bg = (bg + ' row-muted').trim();
+  return bg;
+}
+```
+
+**색상표**:
+| 조건 | 배경 | 글씨 |
+|---|---|---|
+| 음수(mileage<0) 또는 구분=사용 | 연한 빨강 `rgba(163,45,45,.07)` (`row-negative`) | 사용액 빨간 글씨(유지) |
+| 구분=불용 | 연한 회색 `rgba(136,135,128,.08)` (`row-void`) | 기본 |
+| 미적립 | 흰색 | **연하게** (`row-muted`) |
+| 무효 | (배경은 위 구분 따라) | **기본**(연하게 안 함) |
+| 유효+적립 · 임박(30/90/180일) | 유효기간 색 `row-exp30/60/90` | 기본 |
+| 그 외 | 흰색 | 기본 |
+
+**관련 CSS**:
+```css
+.row-negative{background:rgba(163,45,45,.07)}   /* 음수·사용 : 연빨강 */
+.row-void{background:rgba(136,135,128,.08)}      /* 불용 : 연회색 */
+.data-table tr.row-muted td{color:var(--text-hint)!important}  /* 미적립 : 글씨 연하게 */
+/* .row-exp30=var(--warn30-bg) / .row-exp60=var(--warn60-bg) / .row-exp90=#FDF8EC (유효기간 색) */
+```
+
+**조정 팁**:
+- 색 진하기: 각 `rgba(...)`의 **마지막 알파값**(.07/.08 등)을 키우면 진해짐
+- "글씨 연하게" 대상 바꾸기: `row-muted` 조건(`미적립 …`)에 `무효` 등을 넣거나 빼면 됨
+- 배경 기준 바꾸기: `getRowBgClass` 위쪽 `if/else if` 순서·조건만 수정 (수식·필터 로직과 무관)
+
+**관련 커밋**: `820b4dc` → `fd6e1c7` → `b12d73b` → `a7f6c3d` → **`e7f451a`(최종)**
+
+---
+
 ## 최근 커밋 요약 (20:20 이후)
 
 | 커밋 | 내용 |
@@ -151,5 +208,6 @@ git pull origin claude/zealous-ptolemy-dye8z8
 | `3e9fbbc` | 모든 테이블 출처 100px 통일 |
 | `5d9f7d2` | 출처 배지 nowrap(글자 잘림 해결) |
 | `d81abf4` | 개인현황 목록만 폭 1040px |
+| `e7f451a` | 행 배경색/글씨색 규칙 최종(배경=구분, 미적립만 글씨 연하게) |
 
 *로컬에서 이어받은 뒤, 위 "찾을 문자열"로 각 위치를 열어 조정하시면 됩니다.*
