@@ -242,10 +242,11 @@ td
 .toast.error{background:var(--warn30)}
 .nowrap{white-space:nowrap}
 .row-negative{background:rgba(163,45,45,.07)}
-.row-zero-or-invalid{background:rgba(136,135,128,.08)}   /* 미적립·기타 무효/잔액0 : 연한 회색 */
-.row-use{background:rgba(52,120,210,.10)}                /* 사용 : 연한 하늘색 */
-.row-void{background:rgba(110,109,102,.20)}              /* 불용 : 진한 회색 */
-.row-invalidzero{background:rgba(92,108,140,.14)}        /* 무효+잔액0 : 톤다운 블루그레이 */
+.row-zero-or-invalid{background:rgba(136,135,128,.08)}   /* 기타 무효/잔액0 : 연한 회색 */
+.row-none-dark{background:rgba(110,109,102,.20)}         /* 미적립 : 진한 회색 */
+.row-void{background:rgba(136,135,128,.08)}              /* 불용 : 연한 회색 */
+.row-invalidzero{background:rgba(163,45,45,.07)}         /* 무효+잔액0 : 연한 빨강 */
+.data-table tr.row-void td,.data-table tr.row-invalidzero td{color:var(--text-hint)!important}  /* 불용·무효잔액0 : 글씨 연하게 */
 .row-exp30{background:var(--warn30-bg)}
 .row-exp60{background:var(--warn60-bg)}
 .row-exp90{background:#FDF8EC}
@@ -1123,12 +1124,12 @@ let currentUserAirlineFilter = ''; // 항공사 카드 클릭 필터
 // 행 배경색 (모든 탭 공통)
 // 우선순위: 사용(음수) > 잔액0·무효·불용(회색) > 유효기간 임박(강조색) > 기본
 function getRowBgClass(r) {
-  if (r.mileage < 0) return 'row-negative';                                          // 음수(실제 차감) → 연한 빨강
-  if (r.category_raw === '사용') return 'row-use';                                   // 사용(잔액0 분류) → 연한 하늘색
-  if (r.category_raw === '불용') return 'row-void';                                  // 불용 → 진한 회색
-  if (r.is_valid_raw === '미적립' || r.category_raw === '미적립') return 'row-zero-or-invalid'; // 미적립 → 연한 회색(유지)
-  if (r.is_valid_raw === '무효' && r.available === 0) return 'row-invalidzero';       // 무효+잔액0 → 톤다운 블루그레이
-  if (r.is_valid_raw === '무효' || r.available === 0) return 'row-zero-or-invalid';   // 그 외 무효/잔액0 → 연한 회색
+  if (r.mileage < 0) return 'row-negative';                                          // 1) 음수 → 연한 빨강
+  if (r.category_raw === '사용') return 'row-negative';                              // 2) 사용 → 연한 빨강
+  if (r.category_raw === '불용') return 'row-void';                                  // 3) 불용 → 연한 회색 + 글씨 연하게
+  if (r.is_valid_raw === '미적립' || r.category_raw === '미적립') return 'row-none-dark'; // 4) 미적립 → 진한 회색
+  if (r.is_valid_raw === '무효' && r.available === 0) return 'row-invalidzero';       // 5) 무효+잔액0 → 연한 빨강 + 글씨 연하게
+  if (r.is_valid_raw === '무효' || r.available === 0) return 'row-zero-or-invalid';   // 6) 그 외 무효/잔액0 → 연한 회색
   if (isValidRow(r)) {
     const d = getDaysLeft(r.expire_date);
     if (d !== null && d >= 0) {
