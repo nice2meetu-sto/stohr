@@ -1134,8 +1134,8 @@ function getRowBgClass(r) {
       else if (d <= 180) bg = 'row-exp90';
     }
   }
-  // ── 글씨 연하게: 무효 또는 미적립 (배경은 위 구분 그대로) ──
-  if (r.is_valid_raw === '무효' || r.is_valid_raw === '미적립' || r.category_raw === '미적립')
+  // ── 글씨 연하게: 미적립만 (무효는 기본 글씨색, 배경은 위 구분 그대로) ──
+  if (r.is_valid_raw === '미적립' || r.category_raw === '미적립')
     bg = (bg + ' row-muted').trim();
   return bg;
 }
