@@ -33,9 +33,9 @@ h1{font-size:1.65rem;font-weight:800;line-height:1.35;letter-spacing:-0.02em}
 .lede{margin-top:10px;color:var(--sub);font-size:.95rem}
 
 .pledge{margin-top:24px;background:var(--trust);color:#fff;border-radius:16px;padding:22px 24px}
-.pledge h2{font-size:.8rem;font-weight:700;opacity:.85;letter-spacing:.04em;margin-bottom:10px}
 .pledge p{font-size:.98rem;font-weight:600}
-.pledge ul{list-style:none;margin-top:12px}
+.pledge h2{font-size:.8rem;font-weight:700;opacity:.85;letter-spacing:.04em;margin-top:12px;margin-bottom:4px}
+.pledge ul{list-style:none;margin-top:0}
 .pledge li{display:flex;gap:9px;font-size:.87rem;opacity:.94;padding:4px 0}
 .pledge li::before{content:"";flex:none;width:7px;height:7px;border-radius:50%;background:#fff;opacity:.8;margin-top:8px}
 
@@ -149,6 +149,16 @@ h1{font-size:1.65rem;font-weight:800;line-height:1.35;letter-spacing:-0.02em}
 .promo-dots span{width:6px;height:6px;border-radius:50%;background:var(--line);transition:background .2s}
 .promo-dots span.on{background:var(--trust)}
 
+/* 역할별 테마색 (옅은 배경) */
+.t-leader{background:#FDF1E3;border-color:#EBB57E}
+.t-leader:hover{border-color:#D89453}
+.t-middle{background:#EFF7E8;border-color:#AED18F}
+.t-middle:hover{border-color:#8BBB63}
+.t-member{background:#FCF7E0;border-color:#E3CD75}
+.t-member:hover{border-color:#CDB14A}
+.t-common{background:#E9F3FB;border-color:#96C2E6}
+.t-common:hover{border-color:#66A5D8}
+
 /* 역할 구경 화면 */
 .browse-promise{margin-top:14px;background:var(--trust);color:#fff;border-radius:14px;padding:16px 20px;
   font-size:.95rem;font-weight:700;line-height:1.6}
@@ -175,8 +185,15 @@ h1{font-size:1.65rem;font-weight:800;line-height:1.35;letter-spacing:-0.02em}
 .focus-item:hover{border-color:var(--trust)}
 .focus-item.on{background:var(--trust-soft);border-color:var(--trust);color:var(--trust);font-weight:700}
 .hist-list{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:8px 20px;margin-top:16px}
-.hist-q{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;padding:12px 0;border-bottom:1px dashed var(--line);font-size:.88rem}
-.hist-q:last-child{border-bottom:none}
+.hist-item{border-bottom:1px dashed var(--line)}
+.hist-item:last-child{border-bottom:none}
+.hist-q{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;padding:12px 8px;margin:0 -8px;
+  font-size:.88rem;cursor:pointer;border-radius:9px;transition:background .13s}
+.hist-q:hover{background:#F4F4EE}
+.hist-tip{display:none;margin:2px 0 12px;background:var(--trying-soft);border-left:3px solid var(--trying);
+  border-radius:0 10px 10px 0;padding:11px 14px;font-size:.85rem;line-height:1.6}
+.hist-tip b{display:block;font-size:.74rem;color:var(--trying);letter-spacing:.03em;margin-bottom:3px}
+.hist-item.open .hist-tip{display:block;animation:unfold .25s ease both}
 .hist-q .qt{flex:1;line-height:1.5}
 .chip{flex:none;font-size:.78rem;font-weight:700;border-radius:99px;padding:4px 11px;white-space:nowrap}
 .chip.did{background:var(--done-soft);color:var(--done)}
@@ -202,8 +219,8 @@ footer{margin-top:48px;text-align:center;font-size:.75rem;color:#A6ACB8;line-hei
   <h1 id="intro-title"></h1>
   <p class="lede" id="intro-desc"></p>
   <div class="pledge">
-    <h2 id="pledge-title"></h2>
     <p id="pledge-main"></p>
+    <h2 id="pledge-title"></h2>
     <ul id="pledge-list"></ul>
   </div>
 
@@ -351,15 +368,16 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbyjfuszUnYPCkcoiYQFC-ip
 const TEXTS = {
   intro_title: "이달의 행동 약속,\n나를 점검합니다",
   intro_desc: "매월 15일까지 진행되는, 행동 약속을 스스로 돌아보는 1분 점검입니다. \n평가가 아니라 각자의 자리에서 지난 한 달을 돌아보는 시간입니다.",
-  pledge_title: "먼저, 재단이 약속합니다",
-  pledge_main: "이 점검은 평가가 아니라, 우리를 위한 기록입니다.",
+  pledge_title: "먼저, 조직이 약속합니다",
+  pledge_main: "이 점검은 평가가 아니라, 서로를 위한 노력입니다.",
   pledges: [
-    "개인별 응답은 참여 집계와 본인 조회 외의 용도로 사용하지 않습니다.",
-    "이름과 사번은 본인 확인을 위해서만 사용됩니다."
+    "분기별 조직·인사 제도 설명회 정례화",
+    "인사·조직 주요 현안 사전 공지제도 운영",
+    "Pulse Index 대시보드 구축 및 신뢰지표 설정",
+    "복무 지침 등 헷갈리는 제도 정리 및 안내"
   ],
-  auth_label: "이름과 사번을 입력하면 참여 현황과 본인 문항이 표시됩니다.",
+  auth_label: "이름과 사번을 입력하면 참여 현황과 본인 문항이 표시됩니다.\n개인별 응답은 참여 집계 외에 사용하지 않습니다.",
   auth_fail: "입력하신 정보를 명단에서 찾을 수 없습니다. 이름과 사번을 다시 확인해 주세요. 계속 문제가 있으면 인사팀으로 문의해 주세요.",
-  vacation_note: "※ 업무 인수인계나 일정 조율을 위한 확인은 해당하지 않습니다.",
   done_title: "이달의 점검을 마쳤습니다",
   done_desc: "참여해 주셔서 감사합니다. 다음 회차도 잊지 말고 참여해 주세요. (매월 15일 마감)",
   tip_label: "이렇게 해볼까요?",
@@ -368,41 +386,44 @@ const TEXTS = {
 };
 
 const PRINCIPLES = {
-  HQ: ["일은 직급만큼, 의견은 존중, 책임은 함께"],
-  LEADER: ["일은 직급만큼, 의견은 존중, 책임은 함께"],
-  MIDDLE: ["취합을 넘어, 업무적 방향을 제시한다"],
-  MEMBER: ["내 몫이 힘든 만큼, 다른 이의 몫을 존중한다"],
-  COMMON: ["지킬 건 지키고, 애매한 건 함께 해결한다", "직장 내 인권 보호를 위해 앞장선다"]
+  HQ: ["일은 직급만큼, 책임은 함께, 의견은 존중"],
+  LEADER: ["일은 직급만큼, 책임은 함께, 의견은 존중"],
+  MIDDLE: ["후배에게는 업무적 방향을, 팀장에게는 팀의 목소리를"],
+  MEMBER: ["내 몫이 힘든 만큼, 다른 이의 몫도 이해"],
+  COMMON: ["지킬 건 지키고, 애매한 건 함께", "직장 내 인권 보호는 기본"]
 };
 
 const ROLE_CODE = { "본부장":"HQ", "팀장":"LEADER", "중간관리자":"MIDDLE", "실무자":"MEMBER" };
+const THEME_CLASS = { "팀장":"t-leader", "중간관리자":"t-middle", "실무자":"t-member", "공통":"t-common" };
+/* 대원칙을 문장별 큰따옴표로 묶어 연결 */
+const pj = arr => arr.map(p => '"' + p + '"').join(' \u00B7 ');
 
 /* key: C1~C3(공통), R1~R5(역할별) — 응답로그 시트 열과 1:1 대응 */
 const ITEMS = {
   COMMON: [
     {key:"C1", q:"마주치는 동료에게 직급·친분과 관계없이 인사를 건넸다", tip:"내일 출근길, 엘리베이터에서 처음 만나는 사람에게 목례부터 해보세요. 하루 한 명이면 충분합니다."},
-    {key:"C2", q:"다른 팀의 요청에 거절할 사유부터 찾지 않았다", tip:"요청을 받으면 '안 되는 이유' 대신 '되는 범위'부터 적어보세요. 전부는 어려워도 일부는 도울 수 있는 경우가 대부분입니다."},
+    {key:"C2", q:"다른 팀의 요청에 거절할 사유부터 찾지 않았다", tip:"요청을 받으면 '안 되는 이유' 대신 '되는 범위'부터 적어보는건 어떨까요? 전부는 어려워도 일부는 도울 수 있는 경우가 대부분입니다."},
     {key:"C3", q:"나의 말과 행동이 동료에게 상처가 되지 않았는지 돌아봤다", tip:"퇴근길에 오늘 했던 말 중 다시 담고 싶은 말이 있었는지 하나만 떠올려보세요. 있었다면, 내일 만회할 기회가 있습니다."}
   ],
   HQ: [
-    {key:"R1", q:"팀간 업무의 난이도와 양의 편차를 확인하고, 조정을 시도했다", tip:"분기에 한 번, 팀별 사업 수와 인원 현황을 한 장에 놓고 보는 시간을 가져보세요. 숫자로 나란히 보면 조정할 지점이 눈에 들어옵니다."},
+    {key:"R1", q:"팀간 업무의 난이도와 양의 편차를 확인하고, 조정을 시도했다", tip:"팀별 사업 수와 인원 현황을 한 장에 놓고 보는 시간을 가져보는건 어떨까요? 숫자로 나란히 보면 조정할 지점이 눈에 들어옵니다."},
     {key:"R2", q:"본부 업무의 상급 보고를 실무자에게 맡기지 않고 내 단계에서 직접 수행했다", tip:"다음 상급 보고 일정에서 '누가 보고하는지'부터 확인해 보세요. 실무자 배석은 필요할 수 있지만, 보고의 주어는 나여야 합니다."},
     {key:"R3", q:"문서 양식이나 세부 표현보다, 업무의 방향과 기준을 제시하는 데 집중했다", tip:"보고를 받을 때 문구 수정 대신 '이 일의 목표가 뭐였죠?'를 먼저 물어보세요. 방향이 맞으면 표현은 맡겨도 됩니다."},
-    {key:"R4", q:"팀의 의견을 들은 사안에 대해, 결정을 미루지 않고 제때 내려주었다", tip:"판단이 어려운 사안이라면 '○일까지 결정해서 알려주겠다'는 기한이라도 먼저 주세요. 기다리는 쪽은 기한만 있어도 움직일 수 있습니다."},
-    {key:"R5", q:"팀장의 연차·병가 사용에 이유를 묻거나 의문을 가지지 않았다", tip:"결재 화면 앞에서 3초, '수고 많으셨겠다'로 끝내보세요. 일정 조율이 필요하면 승인 후에 따로 협의해도 늦지 않습니다.", note:true}
+    {key:"R4", q:"팀의 의견을 들은 사안에 대해, 결정을 미루지 않고 제때 내려주었다", tip:"판단이 어려운 사안이라면 '○일까지 결정해서 알려주겠다'는 기한이라도 먼저 제시해보는 건 어떨까요? 기다리는 쪽은 기한만 있어도 움직일 수 있습니다."},
+    {key:"R5", q:"팀장의 연차·병가 사용에 이유를 묻거나 의문을 가지지 않았다", tip:"결재 화면 앞에서 3초, '수고 많으셨겠다'로 끝내보세요. 일정 조율이 필요하면 승인 후에 따로 협의해도 늦지 않습니다."}
   ],
   LEADER: [
     {key:"R1", q:"팀원 간 업무의 난이도와 양의 편차를 확인하고, 조정을 시도했다", tip:"이번 주에 팀원별 담당 업무를 한 줄씩만 적어보세요. 목록을 만들다 보면 몰린 사람이 보이고, 보이는 순간이 조정의 시작입니다."},
     {key:"R2", q:"팀 업무의 상급 보고를 실무자에게 맡기지 않고 내 단계에서 직접 수행했다", tip:"다음 보고 전에 실무자에게 10분 브리핑을 요청해 보세요. '내용은 담당자가 제일 잘 아니까' 대신, 내 이름으로 전달할 준비가 됩니다."},
-    {key:"R3", q:"문서 양식이나 세부 표현보다, 업무의 방향과 기준을 제시하는 데 집중했다", tip:"피드백을 하기 전에 '이건 방향의 문제인가, 취향의 문제인가' 한 번만 자문해 보세요. 취향이면 넘어가는 것도 리더의 일입니다."},
+    {key:"R3", q:"문서 양식이나 세부 표현보다, 업무의 방향과 기준을 제시하는 데 집중했다", tip:"피드백을 하기 전에 '이건 방향의 문제인가, 취향의 문제인가' 한 번만 자문해 보세요. 취향이면 담당자를 믿고 넘어가는 것도 좋은 방법입니다."},
     {key:"R4", q:"팀원의 의견을 들은 사안에 대해, 결정을 미루지 않고 제때 내려주었다", tip:"회의를 마칠 때 '결정된 것 / 미결인 것 / 결정 기한' 세 줄로 정리해 공유해 보세요. 미룬 결정도 기한이 생기면 약속이 됩니다."},
-    {key:"R5", q:"팀원의 연차·병가 사용에 이유를 묻거나 의문을 가지지 않았다", tip:"'이 시기에?'라는 생각이 들면 일단 승인부터. 업무 공백이 걱정된다면 그건 연차의 문제가 아니라 백업 체계의 문제입니다.", note:true}
+    {key:"R5", q:"팀원의 연차·병가 사용에 이유를 묻거나 의문을 가지지 않았다", tip:"'이 시기에?'라는 생각이 들면 일단 승인부터. 업무 공백이 걱정된다면 그건 연차의 문제가 아니라 백업 체계의 문제일지도 모릅니다."}
   ],
   MIDDLE: [
     {key:"R1", q:"후배의 질문이나 요청에 단순 취합·전달이 아니라 방향 제시로 답했다", tip:"후배의 질문에 바로 답이 어려우면 '어디까지 해봤어요?'부터 물어보세요. 취합자에서 방향을 주는 사람으로 바뀌는 첫 질문입니다."},
-    {key:"R2", q:"실무 현장의 어려움이나 의견을 팀장에게 직접 전달했다", tip:"이번 달, 팀장께 전할 현장 의견을 딱 하나만 정해보세요. '요즘 팀원들이 ○○를 힘들어합니다' 한 문장이면 충분합니다."},
+    {key:"R2", q:"실무 현장의 어려움이나 의견을 팀장에게 직접 전달했다", tip:"이번 달, 팀장님께 전할 현장 의견을 딱 하나만 정해보세요. '요즘 팀원들이 ○○를 힘들어합니다' 한 문장이면 충분합니다."},
     {key:"R3", q:"취합이나 자료 요청을 할 때, 목적과 기준을 함께 안내했다", tip:"취합 요청을 보낼 때 '왜 필요한지 / 언제까지 / 어떤 형식으로' 세 가지를 넣어보세요. 받는 사람의 시간이 절반으로 줄어듭니다."},
-    {key:"R4", q:"담당 사업 외에도 팀 전체 업무의 진행 상황을 파악하려 했다", tip:"주간회의에서 내 담당 외 안건 하나에 질문이나 의견을 보태보세요. 팀 전체가 보이기 시작하는 가장 쉬운 방법입니다."},
+    {key:"R4", q:"담당 사업 외에도 팀 전체 업무의 진행 상황을 파악하려 했다", tip:"회의에서 내 담당 외 안건 하나에 질문이나 의견을 보태보세요. 팀 전체가 보이기 시작하는 가장 쉬운 방법입니다."},
     {key:"R5", q:"나의 과거 경험을 기준으로 강요하지 않고, 참고로 공유했다", tip:"'나 때는'이 나오려는 순간, '그때는 이랬는데 지금은 어떤 게 맞을까요?'로 바꿔 말해보세요. 경험이 강요가 아니라 자료가 됩니다."}
   ],
   MEMBER: [
@@ -446,14 +467,14 @@ document.getElementById('intro-desc').innerHTML = esc(TEXTS.intro_desc).replace(
 document.getElementById('pledge-title').textContent = TEXTS.pledge_title;
 document.getElementById('pledge-main').textContent = TEXTS.pledge_main;
 document.getElementById('pledge-list').innerHTML = TEXTS.pledges.map(p=>`<li>${esc(p)}</li>`).join('');
-document.getElementById('auth-label').textContent = TEXTS.auth_label;
+document.getElementById('auth-label').innerHTML = esc(TEXTS.auth_label).replace(/\n/g,'<br>');
 
 /* 테스트 역할 목록 */
 const trl = document.getElementById('test-role-list');
 Object.entries(ROLE_CODE).forEach(([roleName, code])=>{
   const b = document.createElement('button');
   b.className = 'role-card';
-  b.innerHTML = `<div class="rn">${esc(roleName)}</div><div class="rp">"${esc(PRINCIPLES[code].join(' · '))}"</div>`;
+  b.innerHTML = `<div class="rn">${esc(roleName)}</div><div class="rp">${esc(pj(PRINCIPLES[code]))}</div>`;
   b.onclick = ()=>startTest(roleName, code);
   trl.appendChild(b);
 });
@@ -472,9 +493,10 @@ const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').match
 function renderPromo(){
   const roleName = PROMO_ROLES[promoIdx];
   const code = codeOf(roleName);
+  promoCard.className = 'promo-card ' + (THEME_CLASS[roleName] || '');
   promoCard.innerHTML =
     `<div class="pr">${esc(roleName)}</div>
-     <div class="pp">"${esc(PRINCIPLES[code].join(' · '))}"</div>
+     <div class="pp">${esc(pj(PRINCIPLES[code]))}</div>
      <div class="pgo">약속과 문항 보러 가기 ›</div>`;
   promoDots.querySelectorAll('span').forEach((d,i)=>d.classList.toggle('on', i===promoIdx));
 }
@@ -490,7 +512,7 @@ function nextPromo(){
   }, 350);
 }
 renderPromo();
-promoTimer = setInterval(nextPromo, 4000);
+promoTimer = setInterval(nextPromo, 5500);
 function promoClick(){
   clearInterval(promoTimer);
   showBrowse(PROMO_ROLES[promoIdx], 's-intro');
@@ -502,7 +524,7 @@ function showBrowse(roleName, returnTo){
   browseReturnTo = returnTo || 's-intro';
   const code = codeOf(roleName);
   document.getElementById('browse-title').textContent = roleName === '공통' ? '공통 행동 약속' : `${roleName}의 행동 약속`;
-  document.getElementById('browse-promise').textContent = `"${PRINCIPLES[code].join(' · ')}"`;
+  document.getElementById('browse-promise').textContent = pj(PRINCIPLES[code]);
   const items = roleName === '공통'
     ? ITEMS.COMMON.map(it=>({...it, tag:'공통'}))
     : [
@@ -520,7 +542,7 @@ function browseBack(){
   go(browseReturnTo);
   if(browseReturnTo === 's-intro'){
     clearInterval(promoTimer);
-    promoTimer = setInterval(nextPromo, 4000);
+    promoTimer = setInterval(nextPromo, 5500);
   }
 }
 
@@ -529,8 +551,8 @@ const peekList = document.getElementById('peek-role-list');
 PROMO_ROLES.forEach(roleName=>{
   const code = codeOf(roleName);
   const b = document.createElement('button');
-  b.className = 'role-card';
-  b.innerHTML = `<div class="rn">${esc(roleName)}</div><div class="rp">"${esc(PRINCIPLES[code].join(' · '))}"</div>`;
+  b.className = 'role-card ' + (THEME_CLASS[roleName] || '');
+  b.innerHTML = `<div class="rn">${esc(roleName)}</div><div class="rp">${esc(pj(PRINCIPLES[code]))}</div>`;
   b.onclick = ()=>showBrowse(roleName, 's-peek');
   peekList.appendChild(b);
 });
@@ -673,8 +695,14 @@ function showRoundView(roundName){
   document.getElementById('rv-list').innerHTML = items.map(it=>{
     const a = h.answers[it.key];
     if(!a) return '';
-    return `<div class="hist-q"><span class="qt">${esc(it.q)}</span><span class="chip ${CHIP_CLASS[a]||'na'}">${esc(a)}</span></div>`;
+    return `<div class="hist-item">
+      <div class="hist-q"><span class="qt">${esc(it.q)}</span><span class="chip ${CHIP_CLASS[a]||'na'}">${esc(a)}</span></div>
+      <div class="hist-tip"><b>이렇게 해볼까요?</b>${esc(it.tip)}</div>
+    </div>`;
   }).join('');
+  document.querySelectorAll('#rv-list .hist-item').forEach(el=>{
+    el.querySelector('.hist-q').onclick = ()=> el.classList.toggle('open');
+  });
 
   const fx = document.getElementById('rv-focus');
   if(h.focus){ fx.innerHTML = `<b>이달의 다짐</b> · ${esc(h.focus)}`; fx.style.display='block'; }
@@ -702,8 +730,8 @@ function startQuiz(){
   } else lf.style.display = 'none';
 
   quizItems = [
-    ...ITEMS.COMMON.map(it=>({...it, section:"공통 약속", principle:PRINCIPLES.COMMON.join(' · ')})),
-    ...ITEMS[user.roleCode].map(it=>({...it, section:`${user.role} 약속`, principle:PRINCIPLES[user.roleCode].join(' · ')}))
+    ...ITEMS.COMMON.map(it=>({...it, section:"공통 약속", principle:pj(PRINCIPLES.COMMON)})),
+    ...ITEMS[user.roleCode].map(it=>({...it, section:`${user.role} 약속`, principle:pj(PRINCIPLES[user.roleCode])}))
   ];
 
   const body = document.getElementById('quiz-body');
@@ -714,12 +742,11 @@ function startQuiz(){
       lastSection = it.section;
       body.insertAdjacentHTML('beforeend',
         `<div class="section-tag"><span class="sq"></span>${esc(it.section)}</div>
-         <p class="promise-line">"${esc(it.principle)}"</p>`);
+         <p class="promise-line">${esc(it.principle)}</p>`);
     }
     body.insertAdjacentHTML('beforeend', `
       <div class="item" data-key="${it.key}">
         <p class="q"><span class="num">${String(i+1).padStart(2,'0')}</span>${esc(it.q)}</p>
-        ${it.note ? `<p class="subnote">${esc(TEXTS.vacation_note)}</p>` : ''}
         <div class="opts">${SCALE.map(s=>`<button class="opt" data-v="${s}">${s}</button>`).join('')}</div>
         <div class="tip"><b class="tip-label"></b><span class="tip-text"></span></div>
       </div>`);
