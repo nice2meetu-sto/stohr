@@ -108,11 +108,16 @@ h1{font-size:1.65rem;font-weight:800;line-height:1.35;letter-spacing:-0.02em}
 .round-tag{font-size:.82rem;color:var(--sub);font-weight:600}
 .lastfocus{margin-top:14px;background:var(--trust-soft);border-radius:12px;padding:13px 16px;font-size:.88rem}
 .lastfocus b{color:var(--trust)}
-.progress{height:6px;background:var(--line);border-radius:99px;margin:18px 0 4px;overflow:hidden}
+.quiz-sticky{position:sticky;top:0;z-index:20;background:var(--paper);padding:12px 0 8px;margin:-12px 0 0}
+.progress{height:6px;background:var(--line);border-radius:99px;margin:14px 0 4px;overflow:hidden}
 .progress .bar{height:100%;width:0;background:var(--trust);border-radius:99px;transition:width .25s ease}
 .progress-num{font-size:.78rem;color:var(--sub);text-align:right}
 .section-tag{display:inline-flex;align-items:center;gap:7px;margin:26px 0 4px;font-size:.8rem;font-weight:800;color:var(--trust)}
 .section-tag .sq{width:9px;height:9px;background:var(--trust);border-radius:2px;transform:rotate(45deg)}
+.section-tag.qt-hq{color:#9A7E4E} .section-tag.qt-hq .sq{background:#9A7E4E}
+.section-tag.qt-leader{color:#CE7F35} .section-tag.qt-leader .sq{background:#CE7F35}
+.section-tag.qt-middle{color:#6E9E45} .section-tag.qt-middle .sq{background:#6E9E45}
+.section-tag.qt-member{color:#B7952C} .section-tag.qt-member .sq{background:#B7952C}
 .promise-line{font-size:.88rem;color:var(--sub);margin-bottom:12px}
 .item{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:19px 20px;margin-bottom:12px}
 .item .q{font-size:.98rem;font-weight:700;line-height:1.55}
@@ -169,15 +174,17 @@ h1{font-size:1.65rem;font-weight:800;line-height:1.35;letter-spacing:-0.02em}
 .browse-promise.t-member{background:#FCF7E0;border:1.5px solid #E3CD75;color:var(--ink)}
 .browse-promise.t-common{background:#E9F3FB;border:1.5px solid #96C2E6;color:var(--ink)}
 .browse-promise.t-hq{background:#F5EFE4;border:1.5px solid #CDBB99;color:var(--ink)}
-.quiz-promise{margin:6px 0 14px;font-size:.9rem}
-#s-quiz.t-hq .quiz-role em{color:#9A7E4E}
-#s-quiz.t-hq .progress .bar{background:#9A7E4E}
-#s-quiz.t-leader .quiz-role em{color:#CE7F35}
-#s-quiz.t-leader .progress .bar{background:#CE7F35}
-#s-quiz.t-middle .quiz-role em{color:#6E9E45}
-#s-quiz.t-middle .progress .bar{background:#6E9E45}
-#s-quiz.t-member .quiz-role em{color:#B7952C}
-#s-quiz.t-member .progress .bar{background:#B7952C}
+.quiz-promise{margin:6px 0 14px;font-size:.9rem;
+  position:sticky;top:86px;z-index:15;
+  padding:12px 20px;box-shadow:0 6px 14px -10px rgba(36,43,54,.25)}
+#s-quiz.qt-hq .quiz-role em{color:#9A7E4E}
+#s-quiz.qt-hq .progress .bar{background:#9A7E4E}
+#s-quiz.qt-leader .quiz-role em{color:#CE7F35}
+#s-quiz.qt-leader .progress .bar{background:#CE7F35}
+#s-quiz.qt-middle .quiz-role em{color:#6E9E45}
+#s-quiz.qt-middle .progress .bar{background:#6E9E45}
+#s-quiz.qt-member .quiz-role em{color:#B7952C}
+#s-quiz.qt-member .progress .bar{background:#B7952C}
 .browse-item{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin-top:11px}
 .browse-item .q{font-size:.94rem;font-weight:700;line-height:1.55}
 .browse-item .q .num{color:var(--trust);margin-right:6px;font-weight:800}
@@ -290,13 +297,15 @@ footer{margin-top:48px;text-align:center;font-size:.75rem;color:#A6ACB8;line-hei
 
 <!-- ④ 체크리스트 -->
 <section class="screen" id="s-quiz">
-  <div class="quiz-head">
-    <div class="quiz-role"><em id="quiz-name"></em>의 한 달</div>
-    <span class="round-tag" id="quiz-round"></span>
+  <div class="quiz-sticky">
+    <div class="quiz-head">
+      <div class="quiz-role"><em id="quiz-name"></em>의 한 달</div>
+      <span class="round-tag" id="quiz-round"></span>
+    </div>
+    <div class="progress"><div class="bar" id="bar"></div></div>
+    <p class="progress-num"><span id="answered">0</span> / 8</p>
   </div>
   <div class="lastfocus" id="lastfocus" style="display:none"></div>
-  <div class="progress"><div class="bar" id="bar"></div></div>
-  <p class="progress-num"><span id="answered">0</span> / 8</p>
   <div id="quiz-body"></div>
   <button class="btn" id="btn-result" disabled onclick="showResult()">결과 확인하기</button>
   <button class="btn secondary" onclick="location.reload()" id="quiz-exit">그만두기</button>
@@ -735,9 +744,9 @@ function startTest(roleName, code){
 function startQuiz(){
   answers = {}; focusKey = null;
   const sq = document.getElementById('s-quiz');
-  sq.classList.remove('t-hq','t-leader','t-middle','t-member','t-common');
+  sq.classList.remove('qt-hq','qt-leader','qt-middle','qt-member','qt-common');
   const themeCls = THEME_CLASS[user.role];
-  if(themeCls) sq.classList.add(themeCls);
+  if(themeCls) sq.classList.add('q' + themeCls);
   document.getElementById('quiz-name').textContent = testMode ? user.role + " (체험)" : user.name + "님";
   document.getElementById('quiz-round').textContent = testMode ? "체험판" : `${user.current} 점검`;
   document.getElementById('quiz-exit').textContent = testMode ? "체험 그만두기" : "그만두기";
@@ -759,8 +768,9 @@ function startQuiz(){
   quizItems.forEach((it,i)=>{
     if(it.section !== lastSection){
       lastSection = it.section;
+      const tagCls = (it.theme && it.theme !== 't-common') ? ' q' + it.theme : '';
       body.insertAdjacentHTML('beforeend',
-        `<div class="section-tag"><span class="sq"></span>${esc(it.section)}</div>
+        `<div class="section-tag${tagCls}"><span class="sq"></span>${esc(it.section)}</div>
          <div class="browse-promise quiz-promise ${it.theme||''}">${esc(it.principle)}</div>`);
     }
     body.insertAdjacentHTML('beforeend', `
@@ -810,6 +820,11 @@ function startQuiz(){
   });
   updateProgress();
   go('s-quiz');
+  // 대원칙 카드 고정 위치를 진행 바 블록 실제 높이에 맞춤
+  requestAnimationFrame(()=>{
+    const sh = document.querySelector('.quiz-sticky').offsetHeight;
+    document.querySelectorAll('.quiz-promise').forEach(el=>{ el.style.top = sh + 'px'; });
+  });
 }
 
 function updateProgress(){
