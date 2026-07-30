@@ -170,6 +170,14 @@ h1{font-size:1.65rem;font-weight:800;line-height:1.35;letter-spacing:-0.02em}
 .browse-promise.t-common{background:#E9F3FB;border:1.5px solid #96C2E6;color:var(--ink)}
 .browse-promise.t-hq{background:#F5EFE4;border:1.5px solid #CDBB99;color:var(--ink)}
 .quiz-promise{margin:6px 0 14px;font-size:.9rem}
+#s-quiz.t-hq .quiz-role em{color:#9A7E4E}
+#s-quiz.t-hq .progress .bar{background:#9A7E4E}
+#s-quiz.t-leader .quiz-role em{color:#CE7F35}
+#s-quiz.t-leader .progress .bar{background:#CE7F35}
+#s-quiz.t-middle .quiz-role em{color:#6E9E45}
+#s-quiz.t-middle .progress .bar{background:#6E9E45}
+#s-quiz.t-member .quiz-role em{color:#B7952C}
+#s-quiz.t-member .progress .bar{background:#B7952C}
 .browse-item{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin-top:11px}
 .browse-item .q{font-size:.94rem;font-weight:700;line-height:1.55}
 .browse-item .q .num{color:var(--trust);margin-right:6px;font-weight:800}
@@ -537,10 +545,7 @@ function showBrowse(roleName, returnTo){
   bp.textContent = pj(PRINCIPLES[code]);
   const items = roleName === '공통'
     ? ITEMS.COMMON.map(it=>({...it, tag:'공통'}))
-    : [
-        ...ITEMS.COMMON.map(it=>({...it, tag:'공통'})),
-        ...ITEMS[code].map(it=>({...it, tag:roleName}))
-      ];
+    : ITEMS[code].map(it=>({...it, tag:roleName}));
   document.getElementById('browse-body').innerHTML = items.map((it,i)=>
     `<div class="browse-item">
        <p class="q"><span class="num">${String(i+1).padStart(2,'0')}</span>${esc(it.q)} <span style="font-size:.75rem;color:var(--sub);font-weight:600">· ${esc(it.tag)}</span></p>
@@ -729,6 +734,10 @@ function startTest(roleName, code){
 
 function startQuiz(){
   answers = {}; focusKey = null;
+  const sq = document.getElementById('s-quiz');
+  sq.classList.remove('t-hq','t-leader','t-middle','t-member','t-common');
+  const themeCls = THEME_CLASS[user.role];
+  if(themeCls) sq.classList.add(themeCls);
   document.getElementById('quiz-name').textContent = testMode ? user.role + " (체험)" : user.name + "님";
   document.getElementById('quiz-round').textContent = testMode ? "체험판" : `${user.current} 점검`;
   document.getElementById('quiz-exit').textContent = testMode ? "체험 그만두기" : "그만두기";
