@@ -174,9 +174,9 @@ h1{font-size:1.65rem;font-weight:800;line-height:1.35;letter-spacing:-0.02em}
 .browse-promise.t-member{background:#FCF7E0;border:1.5px solid #E3CD75;color:var(--ink)}
 .browse-promise.t-common{background:#E9F3FB;border:1.5px solid #96C2E6;color:var(--ink)}
 .browse-promise.t-hq{background:#F5EFE4;border:1.5px solid #CDBB99;color:var(--ink)}
-.quiz-promise{margin:6px 0 14px;font-size:.9rem;
-  position:sticky;top:86px;z-index:15;
-  padding:12px 20px;box-shadow:0 6px 14px -10px rgba(36,43,54,.25)}
+.quiz-promise{margin:10px 0 16px;font-size:.9rem;
+  position:sticky;top:86px;z-index:15;padding:12px 20px;
+  box-shadow:0 0 0 8px var(--paper), 0 8px 16px -10px rgba(36,43,54,.25)}
 #s-quiz.qt-hq .quiz-role em{color:#9A7E4E}
 #s-quiz.qt-hq .progress .bar{background:#9A7E4E}
 #s-quiz.qt-leader .quiz-role em{color:#CE7F35}
@@ -399,7 +399,7 @@ const TEXTS = {
     "분기별 조직·인사 제도 설명회 정례화",
     "인사·조직 주요 현안 사전 공지제도 운영",
     "Pulse Index 대시보드 구축 및 신뢰지표 설정",
-    "복무 지침 등 헷갈리는 제도 정리 및 안내"
+    "소통창구 개선 및 헷갈리는 제도 안내서 배포"
   ],
   auth_label: "이름과 사번을 입력하면 참여 현황과 본인 문항이 표시됩니다.\n개인별 응답은 참여 집계 외에 사용하지 않습니다.",
   auth_fail: "입력하신 정보를 명단에서 찾을 수 없습니다. 이름과 사번을 다시 확인해 주세요. 계속 문제가 있으면 인사팀으로 문의해 주세요.",
@@ -427,7 +427,7 @@ const pj = arr => arr.map(p => '"' + p + '"').join(' \u00B7 ');
 const ITEMS = {
   COMMON: [
     {key:"C1", q:"마주치는 동료에게 직급·친분과 관계없이 인사를 건넸다", tip:"내일 출근길, 엘리베이터에서 처음 만나는 사람에게 목례부터 해보세요. 하루 한 명이면 충분합니다."},
-    {key:"C2", q:"다른 팀의 요청에 거절할 사유부터 찾지 않았다", tip:"요청을 받으면 '안 되는 이유' 대신 '되는 범위'부터 적어보는건 어떨까요? 전부는 어려워도 일부는 도울 수 있는 경우가 대부분입니다."},
+    {key:"C2", q:"다른 팀(본부)의 요청에 거절할 사유부터 찾지 않았다", tip:"요청을 받으면 '안 되는 이유' 대신 '되는 범위'부터 적어보는건 어떨까요? 전부는 어려워도 일부는 도울 수 있는 경우가 대부분입니다."},
     {key:"C3", q:"나의 말과 행동이 동료에게 상처가 되지 않았는지 돌아봤다", tip:"퇴근길에 오늘 했던 말 중 다시 담고 싶은 말이 있었는지 하나만 떠올려보세요. 있었다면, 내일 만회할 기회가 있습니다."}
   ],
   HQ: [
