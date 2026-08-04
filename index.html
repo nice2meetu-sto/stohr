@@ -174,6 +174,24 @@ h1{font-size:1.65rem;font-weight:800;line-height:1.35;letter-spacing:-0.02em}
 .browse-promise.t-member{background:#FCF7E0;border:1.5px solid #E3CD75;color:var(--ink)}
 .browse-promise.t-common{background:#E9F3FB;border:1.5px solid #96C2E6;color:var(--ink)}
 .browse-promise.t-hq{background:#F5EFE4;border:1.5px solid #CDBB99;color:var(--ink)}
+.pledge-write{margin-top:28px;background:var(--card);border:1px solid var(--line);border-radius:15px;padding:19px 20px;text-align:center}
+.pw-title{font-size:.95rem;font-weight:800}
+.pw-box{position:relative;display:inline-block;max-width:100%;margin-top:13px}
+.pw-sizer{display:block;visibility:hidden;white-space:pre;
+  padding:13px 24px;font-size:.95rem;font-weight:700;letter-spacing:-0.01em;
+  border:1.5px solid transparent}
+.pw-ghost{position:absolute;left:0;top:0;right:0;padding:13px 24px;font-size:.95rem;
+  color:#C7CCD5;pointer-events:none;white-space:pre;overflow:hidden;letter-spacing:-0.01em;text-align:left}
+#pw-input{position:absolute;left:0;top:0;width:100%;height:100%;
+  padding:13px 24px;font-size:.95rem;font-family:inherit;letter-spacing:-0.01em;
+  border:1.5px solid var(--line);border-radius:12px;background:transparent;color:var(--ink);
+  text-align:left;font-weight:700}
+#pw-input:focus{border-color:var(--trust);outline:none}
+.pw-box.ok #pw-input{border-color:var(--done);background:var(--done-soft)}
+.pw-box.ok .pw-ghost{color:transparent}
+.pw-hint{margin-top:9px;font-size:.8rem;color:var(--sub)}
+.pw-hint.ok{color:var(--done);font-weight:700}
+
 .quiz-promise{margin:10px 0 16px;font-size:.9rem;
   position:sticky;top:86px;z-index:15;padding:12px 20px;
   box-shadow:0 0 0 8px var(--paper), 0 8px 16px -10px rgba(36,43,54,.25)}
@@ -307,6 +325,15 @@ footer{margin-top:48px;text-align:center;font-size:.75rem;color:#A6ACB8;line-hei
   </div>
   <div class="lastfocus" id="lastfocus" style="display:none"></div>
   <div id="quiz-body"></div>
+  <div class="pledge-write">
+    <p class="pw-title">마지막으로, 이달의 약속을 직접 새겨주세요</p>
+    <div class="pw-box">
+      <span class="pw-sizer" id="pw-sizer"></span>
+      <span class="pw-ghost" id="pw-ghost"></span>
+      <input id="pw-input" autocomplete="off" spellcheck="false" aria-label="행동 약속 따라 적기">
+    </div>
+    <p class="pw-hint" id="pw-hint">약속 문구를 입력하고 결과를 확인하세요.</p>
+  </div>
   <button class="btn" id="btn-result" disabled onclick="showResult()">결과 확인하기</button>
   <button class="btn secondary" onclick="location.reload()" id="quiz-exit">그만두기</button>
 </section>
@@ -392,7 +419,7 @@ const GAS_URL = "https://script.google.com/macros/s/AKfycbyjfuszUnYPCkcoiYQFC-ip
 
 const TEXTS = {
   intro_title: "이달의 행동 약속,\n나를 점검합니다",
-  intro_desc: "매월 15일까지 진행되는, 행동 약속을 스스로 돌아보는 1분 점검입니다. \n평가가 아니라 각자의 자리에서 지난 한 달을 돌아보는 시간입니다.",
+  intro_desc: "매월 한 번, 행동 약속을 스스로 돌아보는 1분 점검입니다. \n평가가 아니라 각자의 자리에서 지난 한 달을 돌아보는 시간입니다.",
   pledge_title: "먼저, 조직이 약속합니다",
   pledge_main: "이 점검은 평가가 아니라, 서로를 위한 노력입니다.",
   pledges: [
@@ -404,7 +431,7 @@ const TEXTS = {
   auth_label: "이름과 사번을 입력하면 참여 현황과 본인 문항이 표시됩니다.\n개인별 응답은 참여 집계 외에 사용하지 않습니다.",
   auth_fail: "입력하신 정보를 명단에서 찾을 수 없습니다. 이름과 사번을 다시 확인해 주세요. 계속 문제가 있으면 인사팀으로 문의해 주세요.",
   done_title: "이달의 점검을 마쳤습니다",
-  done_desc: "참여해 주셔서 감사합니다. 다음 회차도 잊지 말고 참여해 주세요. (매월 15일 마감)",
+  done_desc: "참여해 주셔서 감사합니다. 다음 회차는 다음 달에 열립니다.",
   tip_label: "이렇게 해볼까요?",
   test_done_title: "체험을 마쳤습니다",
   test_done_desc: "체험판 응답은 저장되지 않았습니다. 실제 점검은 이름과 사번으로 참여해 주세요."
@@ -465,9 +492,9 @@ const TIP_TRIGGER = "노력 중이다";
 const CHIP_CLASS = {"실천했다":"did","노력 중이다":"try","상황이 없었다":"na"};
 /* 서버 연결 실패 시 회차 표시에 쓰는 예비 정보 */
 const FALLBACK_ROUNDS = [
-  {name:"1차", desc:"8월 15일까지"},
-  {name:"2차", desc:"8월 16일 오픈 · 9월 15일까지"},
-  {name:"3차", desc:"9월 16일 오픈 · 10월 15일까지"}
+  {name:"1차", desc:"8월 31일까지"},
+  {name:"2차", desc:"9월 1일 오픈 · 9월 30일까지"},
+  {name:"3차", desc:"10월 1일 오픈 · 10월 31일까지"}
 ];
 
 /* =========================================================
@@ -478,6 +505,8 @@ let answers = {};
 let focusKey = null;
 let quizItems = [];
 let testMode = false;
+let pledgeTarget = '';
+let pledgeOk = false;
 
 function go(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
@@ -743,6 +772,29 @@ function startTest(roleName, code){
 
 function startQuiz(){
   answers = {}; focusKey = null;
+  pledgeTarget = (PRINCIPLES[user.roleCode] && PRINCIPLES[user.roleCode][0]) || '';
+  pledgeOk = false;
+  document.getElementById('pw-ghost').textContent = pledgeTarget;
+  document.getElementById('pw-sizer').textContent = pledgeTarget;
+  const pwInput = document.getElementById('pw-input');
+  pwInput.value = '';
+  document.querySelector('.pw-box').classList.remove('ok');
+  const pwHint = document.getElementById('pw-hint');
+  pwHint.classList.remove('ok');
+  pwHint.textContent = '위 약속 문구를 그대로 입력하면 결과를 확인할 수 있습니다.';
+  if(!pwInput.dataset.bound){
+    pwInput.dataset.bound = '1';
+    pwInput.addEventListener('input', ()=>{
+      pledgeOk = pwInput.value.trim() === pledgeTarget;
+      document.querySelector('.pw-box').classList.toggle('ok', pledgeOk);
+      const hint = document.getElementById('pw-hint');
+      hint.classList.toggle('ok', pledgeOk);
+      hint.textContent = pledgeOk
+        ? '좋아요, 이달의 약속이 새겨졌습니다!'
+        : '위 약속 문구를 그대로 입력하면 결과를 확인할 수 있습니다.';
+      updateProgress();
+    });
+  }
   const sq = document.getElementById('s-quiz');
   sq.classList.remove('qt-hq','qt-leader','qt-middle','qt-member','qt-common');
   const themeCls = THEME_CLASS[user.role];
@@ -831,7 +883,7 @@ function updateProgress(){
   const n = Object.keys(answers).length;
   document.getElementById('answered').textContent = n;
   document.getElementById('bar').style.width = (n/quizItems.length*100)+'%';
-  document.getElementById('btn-result').disabled = n < quizItems.length;
+  document.getElementById('btn-result').disabled = (n < quizItems.length) || !pledgeOk;
 }
 
 /* 자동 저장 (결과 확인 시점에 1차 저장, 제출하기로 다짐 포함 갱신) */
